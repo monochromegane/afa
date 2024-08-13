@@ -8,19 +8,20 @@ type AIForAll struct {
 
 func (ai *AIForAll) New() error {
 	fmt.Println("Run as new mode.")
-	return ai.start()
+	return ai.startSession()
 }
 
 func (ai *AIForAll) Source() error {
 	fmt.Println("Run as source mode.")
-	return ai.start()
+	return ai.startSession()
 }
 
 func (ai *AIForAll) Resume() error {
 	fmt.Println("Run as resume mode.")
-	return ai.start()
+	return ai.startSession()
 }
 
-func (ai *AIForAll) start() error {
-	return nil
+func (ai *AIForAll) startSession() error {
+	session := NewSession()
+	return session.Start()
 }
