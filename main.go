@@ -8,10 +8,28 @@ import (
 )
 
 func main() {
+	initCommand, err := GetInitCommand()
+	if err != nil {
+		log.Fatal("Error: Failed to get init command %v", err)
+	}
+	newCommand, err := GetNewCommand()
+	if err != nil {
+		log.Fatal("Error: Failed to get new command %v", err)
+	}
+	sourceCommand, err := GetSourceCommand()
+	if err != nil {
+		log.Fatal("Error: Failed to get source command %v", err)
+	}
+	resumeCommand, err := GetResumeCommand()
+	if err != nil {
+		log.Fatal("Error: Failed to get resume command %v", err)
+	}
+
 	cmds := []Command{
-		GetNewCommand(),
-		GetSourceCommand(),
-		GetResumeCommand(),
+		initCommand,
+		newCommand,
+		sourceCommand,
+		resumeCommand,
 	}
 
 	names := []string{}

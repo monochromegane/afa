@@ -1,9 +1,34 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"syscall"
+
+	"golang.org/x/term"
+)
 
 type AIForAll struct {
-	Project string
+	ConfigDir string
+	CacheDir  string
+	WorkSpace *WorkSpace
+}
+
+func NewAIForAll(configDir, cacheDir string) *AIForAll {
+	return &AIForAll{
+		WorkSpace: NewWorkSpace(configDir, cacheDir),
+	}
+}
+
+func (ai *AIForAll) Init() error {
+	fmt.Print("Enter your OpenAI API key: ")
+	apiKey, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return fmt.Errorf("Failed to read OpenAI API key: %v", err)
+	}
+	config := &Config{
+		OpenAIAPIKey: string(apiKey),
+	}
+	return ai.WorkSpace.Setup(config)
 }
 
 func (ai *AIForAll) New() error {
