@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 )
 
 type WorkSpace struct {
@@ -57,7 +58,7 @@ func (w *WorkSpace) setupFiles(config *Config) error {
 
 	if err := w.writeFileIfNotExist(
 		w.TemplatePath("user", "default"),
-		[]byte("{{.Prompt}}{{- if .Stdin }}\n```\n{{.Stdin}}\n```{{- end }}"),
+		[]byte("{{.Message}}{{- if .MessageStdin }}\n```\n{{.MessageStdin}}\n```{{- end }}"),
 	); err != nil {
 		return err
 	}
@@ -91,6 +92,23 @@ func (w *WorkSpace) SidDir() string {
 
 func (w *WorkSpace) ConfigPath() string {
 	return path.Join(w.ConfigDir, "config.json")
+}
+
+func (w *WorkSpace) SessionPathFromTime(startedAt time.Time) string {
+	return w.SessionPathFromName(startedAt.Format("2006-01-02_15-04-05"))
+}
+
+func (w *WorkSpace) SessionPathFromName(sessionName string) string {
+	return path.Join(w.SessionsDir(), fmt.Sprintf("%s.json", sessionName))
+}
+
+func (w *WorkSpace) SetupSession(sessionPath, model string) error {
+	history := History{Model: model, Messages: []*HistoryMessage{}}
+	jsonSession, err := json.Marshal(history)
+	if err != nil {
+		return err
+	}
+	return w.writeFileIfNotExist(sessionPath, jsonSession)
 }
 
 func (w *WorkSpace) mkDirAllIfNotExist(dir string) error {

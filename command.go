@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"io"
 	"os"
 	"path"
 )
@@ -92,7 +93,12 @@ func GetNewCommand() (Command, error) {
 		return nil, err
 	}
 
-	setBasicFlags(aiForAll, flagSet)
+	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
+
+	flagSet.StringVar(&aiForAll.SystemPromptTemplate, "S", "default", "Name of system prompt template.")
+	flagSet.StringVar(&aiForAll.Model, "M", "gpt-4o-mini", "Name of Model.")
 
 	return &NewCommand{
 		flagSet:  flagSet,
@@ -107,7 +113,9 @@ func GetSourceCommand() (Command, error) {
 		return nil, err
 	}
 
-	setBasicFlags(aiForAll, flagSet)
+	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
 
 	return &SourceCommand{
 		flagSet:  flagSet,
@@ -122,7 +130,9 @@ func GetResumeCommand() (Command, error) {
 		return nil, err
 	}
 
-	setBasicFlags(aiForAll, flagSet)
+	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
 
 	return &ResumeCommand{
 		flagSet:  flagSet,
@@ -130,7 +140,26 @@ func GetResumeCommand() (Command, error) {
 	}, nil
 }
 
-func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) {
+func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
+	flagSet.StringVar(&aiForAll.Message, "m", "", "Message as initial prompt.")
+	flagSet.StringVar(&aiForAll.UserPromptTemplate, "U", "default", "Name of user prompt template.")
+
+	if hasStdin() {
+		inputStdin, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		aiForAll.MessageStdin = string(inputStdin)
+	}
+
+	return nil
+}
+
+func hasStdin() bool {
+	if stat, err := os.Stdin.Stat(); err == nil {
+		return (stat.Mode() & os.ModeCharDevice) == 0
+	}
+	return false
 }
 
 func newAIForAll() (*AIForAll, error) {

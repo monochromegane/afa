@@ -6,7 +6,7 @@ type LLMClient interface {
 	ChatCompletion() error
 }
 
-func getLLMClient() LLMClient {
+func getLLMClient(model string) LLMClient {
 	// First, only OpenAI is supported
 	return &llm.OpenAIClient{}
 }

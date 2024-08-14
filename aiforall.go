@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"syscall"
+	"time"
 
 	"golang.org/x/term"
 )
@@ -11,6 +12,13 @@ type AIForAll struct {
 	ConfigDir string
 	CacheDir  string
 	WorkSpace *WorkSpace
+
+	SystemPromptTemplate string
+	UserPromptTemplate   string
+	Model                string
+	SessionName          string
+	Message              string
+	MessageStdin         string
 }
 
 func NewAIForAll(configDir, cacheDir string) *AIForAll {
@@ -33,20 +41,30 @@ func (ai *AIForAll) Init() error {
 
 func (ai *AIForAll) New() error {
 	fmt.Println("Run as new mode.")
-	return ai.startSession()
+	sessionPath := ai.WorkSpace.SessionPathFromTime(time.Now())
+	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model); err != nil {
+		return err
+	}
+	return ai.startSession(sessionPath)
 }
 
 func (ai *AIForAll) Source() error {
 	fmt.Println("Run as source mode.")
-	return ai.startSession()
+	sessionPath := ai.WorkSpace.SessionPathFromName(ai.SessionName)
+	return ai.startSession(sessionPath)
 }
 
 func (ai *AIForAll) Resume() error {
 	fmt.Println("Run as resume mode.")
-	return ai.startSession()
+	sessionPath := ai.WorkSpace.SessionPathFromName(ai.SessionName)
+	return ai.startSession(sessionPath)
 }
 
-func (ai *AIForAll) startSession() error {
-	session := NewSession()
-	return session.Start()
+func (ai *AIForAll) startSession(sessionPath string) error {
+	session := NewSession(
+		sessionPath,
+		ai.WorkSpace.TemplatePath("system", ai.SystemPromptTemplate),
+		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
+	)
+	return session.Start(ai.Message, ai.MessageStdin)
 }
