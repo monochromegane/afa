@@ -1,13 +1,22 @@
 package main
 
+import "github.com/monochromegane/aiforall/internal/payload"
+
 type History struct {
-	Model    string            `json:"model"`
-	Messages []*HistoryMessage `json:"messages"`
+	*payload.Request
 }
 
 type HistoryMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	*payload.Message
+}
+
+func NewHistory(model string) *History {
+	return &History{
+		&payload.Request{
+			Model:    model,
+			Messages: []*payload.Message{},
+		},
+	}
 }
 
 func (h *History) IsNewSession() bool {
@@ -15,11 +24,11 @@ func (h *History) IsNewSession() bool {
 }
 
 func (h *History) AddMessage(role, content string) {
-	h.Messages = append(h.Messages, &HistoryMessage{Role: role, Content: content})
+	h.Messages = append(h.Messages, &payload.Message{Role: role, Content: content})
 }
 
 func (h *History) LastMessage() *HistoryMessage {
-	return h.Messages[len(h.Messages)-1]
+	return &HistoryMessage{h.Messages[len(h.Messages)-1]}
 }
 
 func (m *HistoryMessage) IsAsUser() bool {

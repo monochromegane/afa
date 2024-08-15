@@ -103,7 +103,7 @@ func (w *WorkSpace) SessionPathFromName(sessionName string) string {
 }
 
 func (w *WorkSpace) SetupSession(sessionPath, model string) error {
-	history := History{Model: model, Messages: []*HistoryMessage{}}
+	history := NewHistory(model)
 	jsonSession, err := json.Marshal(history)
 	if err != nil {
 		return err
