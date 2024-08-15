@@ -6,7 +6,7 @@ type LLMClient interface {
 	ChatCompletion() error
 }
 
-func getLLMClient(model string) LLMClient {
+func getLLMClient(config *Config, model string) LLMClient {
 	// First, only OpenAI is supported
-	return &llm.OpenAIClient{}
+	return &llm.OpenAIClient{ApiKey: config.OpenAIAPIKey}
 }

@@ -1,33 +1,37 @@
 package main
 
+import (
+	"context"
+	"fmt"
+	"io"
+	"strings"
+)
+
 type Session struct {
-	SessionPath              string
+	Config                   *Config
+	History                  *History
 	SystemPromptTemplatePath string
 	UserPromptTemplatePath   string
 }
 
-func NewSession(sessionPath, systemPromptTemplatePath, userPromptTemplatePath string) *Session {
+func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string) *Session {
 	return &Session{
-		SessionPath:              sessionPath,
+		Config:                   config,
+		History:                  history,
 		SystemPromptTemplatePath: systemPromptTemplatePath,
 		UserPromptTemplatePath:   userPromptTemplatePath,
 	}
 }
 
-func (s *Session) Start(message, messageStdin string) error {
-	history, err := LoadHistory(s.SessionPath)
-	if err != nil {
-		return err
-	}
+func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.Reader, w io.Writer) error {
+	client := getLLMClient(s.Config, s.History.Model)
 
-	client := getLLMClient(history.Model)
-
-	if history.IsNewSession() {
+	if s.History.IsNewSession() {
 		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin)
 		if err != nil {
 			return err
 		}
-		history.AddMessage("system", systemPrompt)
+		s.History.AddMessage("system", systemPrompt)
 	}
 
 	if message != "" || messageStdin != "" {
@@ -35,7 +39,14 @@ func (s *Session) Start(message, messageStdin string) error {
 		if err != nil {
 			return err
 		}
-		history.AddMessage("user", userPrompt)
+		s.History.AddMessage("user", userPrompt)
+	}
+
+	if lastMessage := s.History.LastMessage(); lastMessage.IsAsUser() {
+		lines := strings.Split(lastMessage.Content, "\n")
+		for _, line := range lines {
+			fmt.Fprintln(w, fmt.Sprintf("> %s", line))
+		}
 	}
 
 	return client.ChatCompletion()

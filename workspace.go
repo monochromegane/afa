@@ -111,6 +111,43 @@ func (w *WorkSpace) SetupSession(sessionPath, model string) error {
 	return w.writeFileIfNotExist(sessionPath, jsonSession)
 }
 
+func (w *WorkSpace) LoadHistory(path string) (*History, error) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var history History
+	if err := json.Unmarshal(file, &history); err != nil {
+		return nil, err
+	}
+
+	return &history, nil
+}
+
+func (w *WorkSpace) LoadConfig() (*Config, error) {
+	path := w.ConfigPath()
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var config Config
+	if err := json.Unmarshal(file, &config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
+
 func (w *WorkSpace) mkDirAllIfNotExist(dir string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err = os.MkdirAll(dir, w.DirPerm)

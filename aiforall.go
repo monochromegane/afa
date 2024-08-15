@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"io"
+	"os"
 	"syscall"
 	"time"
 
@@ -9,9 +12,9 @@ import (
 )
 
 type AIForAll struct {
-	ConfigDir string
-	CacheDir  string
 	WorkSpace *WorkSpace
+	Input     io.Reader
+	Output    io.Writer
 
 	SystemPromptTemplate string
 	UserPromptTemplate   string
@@ -19,11 +22,14 @@ type AIForAll struct {
 	SessionName          string
 	Message              string
 	MessageStdin         string
+	Interactive          bool
 }
 
 func NewAIForAll(configDir, cacheDir string) *AIForAll {
 	return &AIForAll{
 		WorkSpace: NewWorkSpace(configDir, cacheDir),
+		Input:     os.Stdin,
+		Output:    os.Stdout,
 	}
 }
 
@@ -40,7 +46,6 @@ func (ai *AIForAll) Init() error {
 }
 
 func (ai *AIForAll) New() error {
-	fmt.Println("Run as new mode.")
 	sessionPath := ai.WorkSpace.SessionPathFromTime(time.Now())
 	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model); err != nil {
 		return err
@@ -61,10 +66,19 @@ func (ai *AIForAll) Resume() error {
 }
 
 func (ai *AIForAll) startSession(sessionPath string) error {
+	history, err := ai.WorkSpace.LoadHistory(sessionPath)
+	if err != nil {
+		return err
+	}
+	config, err := ai.WorkSpace.LoadConfig()
+	if err != nil {
+		return err
+	}
 	session := NewSession(
-		sessionPath,
+		config,
+		history,
 		ai.WorkSpace.TemplatePath("system", ai.SystemPromptTemplate),
 		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
 	)
-	return session.Start(ai.Message, ai.MessageStdin)
+	return session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
 }

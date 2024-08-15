@@ -143,6 +143,7 @@ func GetResumeCommand() (Command, error) {
 func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 	flagSet.StringVar(&aiForAll.Message, "m", "", "Message as initial prompt.")
 	flagSet.StringVar(&aiForAll.UserPromptTemplate, "U", "default", "Name of user prompt template.")
+	flagSet.BoolVar(&aiForAll.Interactive, "I", false, "Runs in interactive mode; set to false when standard input is passed.")
 
 	if hasStdin() {
 		inputStdin, err := io.ReadAll(os.Stdin)
@@ -150,6 +151,7 @@ func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 			return err
 		}
 		aiForAll.MessageStdin = string(inputStdin)
+		aiForAll.Interactive = false
 	}
 
 	return nil
