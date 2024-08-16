@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 )
 
@@ -79,7 +80,7 @@ func (w *WorkSpace) TemplateDir(role string) string {
 }
 
 func (w *WorkSpace) TemplatePath(role, name string) string {
-	return path.Join(w.TemplateDir(role), fmt.Sprintf("%s.tmpl", name))
+	return path.Join(w.TemplateDir(role), filepath.Clean(fmt.Sprintf("%s.tmpl", name)))
 }
 
 func (w *WorkSpace) SessionsDir() string {
@@ -99,7 +100,7 @@ func (w *WorkSpace) SessionPathFromTime(startedAt time.Time) string {
 }
 
 func (w *WorkSpace) SessionPathFromName(sessionName string) string {
-	return path.Join(w.SessionsDir(), fmt.Sprintf("%s.json", sessionName))
+	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", sessionName)))
 }
 
 func (w *WorkSpace) SetupSession(sessionPath, model string) error {

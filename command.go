@@ -117,6 +117,8 @@ func GetSourceCommand() (Command, error) {
 		return nil, err
 	}
 
+	flagSet.StringVar(&aiForAll.SessionName, "l", "", "Log name of session.")
+
 	return &SourceCommand{
 		flagSet:  flagSet,
 		aiForAll: aiForAll,

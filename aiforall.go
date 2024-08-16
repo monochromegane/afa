@@ -55,8 +55,10 @@ func (ai *AIForAll) New() error {
 }
 
 func (ai *AIForAll) Source() error {
-	fmt.Println("Run as source mode.")
 	sessionPath := ai.WorkSpace.SessionPathFromName(ai.SessionName)
+	if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
+		return fmt.Errorf("%s: no such session log", sessionPath)
+	}
 	return ai.startSession(sessionPath)
 }
 
