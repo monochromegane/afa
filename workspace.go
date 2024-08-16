@@ -111,6 +111,14 @@ func (w *WorkSpace) SetupSession(sessionPath, model string) error {
 	return w.writeFileIfNotExist(sessionPath, jsonSession)
 }
 
+func (w *WorkSpace) SaveSession(sessionPath string, history *History) error {
+	jsonSession, err := json.Marshal(history)
+	if err != nil {
+		return err
+	}
+	return w.writeFile(sessionPath, jsonSession)
+}
+
 func (w *WorkSpace) LoadHistory(path string) (*History, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, err
@@ -160,9 +168,11 @@ func (w *WorkSpace) mkDirAllIfNotExist(dir string) error {
 
 func (w *WorkSpace) writeFileIfNotExist(path string, content []byte) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		if err := os.WriteFile(path, content, w.FilePerm); err != nil {
-			return err
-		}
+		return w.writeFile(path, content)
 	}
 	return nil
+}
+
+func (w *WorkSpace) writeFile(path string, content []byte) error {
+	return os.WriteFile(path, content, w.FilePerm)
 }

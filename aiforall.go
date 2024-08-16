@@ -81,5 +81,10 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
 		ai.Interactive,
 	)
-	return session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
+	err = session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
+	if err != nil {
+		return err
+	}
+
+	return ai.WorkSpace.SaveSession(sessionPath, session.History)
 }
