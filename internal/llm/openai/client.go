@@ -56,9 +56,6 @@ func (c *Client) newJsonRequest(ctx context.Context, request *Request) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(c.Endpoint)
-	fmt.Println(API_CHAT_COMPLETIONS_PATH)
-	fmt.Println(endpoint)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, &buf)
 	if err != nil {
