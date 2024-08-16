@@ -52,9 +52,14 @@ func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.
 	}
 
 	ctx = context.WithValue(ctx, "openai-api-key", s.Config.OpenAIAPIKey)
-	_, err := client.ChatCompletion(s.History.Request, ctx)
+	response, err := client.ChatCompletion(s.History.Request, ctx)
 	if err != nil {
 		return err
 	}
+
+	s.History.AddMessage(response.Message.Role, response.Message.Content)
+	fmt.Fprintln(w, response.Message.Content)
+	fmt.Fprintln(w)
+
 	return nil
 }
