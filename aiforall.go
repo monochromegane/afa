@@ -23,6 +23,7 @@ type AIForAll struct {
 	Message              string
 	MessageStdin         string
 	Interactive          bool
+	Stream               bool
 }
 
 func NewAIForAll(configDir, cacheDir string) *AIForAll {
@@ -80,6 +81,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.WorkSpace.TemplatePath("system", ai.SystemPromptTemplate),
 		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
 		ai.Interactive,
+		ai.Stream,
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
 	if err != nil {

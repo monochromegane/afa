@@ -143,7 +143,8 @@ func GetResumeCommand() (Command, error) {
 func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 	flagSet.StringVar(&aiForAll.Message, "m", "", "Message as initial prompt.")
 	flagSet.StringVar(&aiForAll.UserPromptTemplate, "U", "default", "Name of user prompt template.")
-	flagSet.BoolVar(&aiForAll.Interactive, "I", false, "Runs in interactive mode; set to false when standard input is passed.")
+	flagSet.BoolVar(&aiForAll.Interactive, "i", false, "Runs in interactive mode; set to false when standard input is passed.")
+	flagSet.BoolVar(&aiForAll.Stream, "s", false, "Runs in stream mode.")
 
 	if hasStdin() {
 		inputStdin, err := io.ReadAll(os.Stdin)

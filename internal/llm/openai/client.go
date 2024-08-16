@@ -1,6 +1,7 @@
 package openai
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -14,6 +15,11 @@ import (
 const (
 	API_ENDPOINT              = "https://api.openai.com"
 	API_CHAT_COMPLETIONS_PATH = "/v1/chat/completions"
+)
+
+var (
+	dataPrefix = []byte("data: ")
+	dataSuffix = []byte("[DONE]")
 )
 
 type Client struct {
@@ -39,11 +45,63 @@ func (c *Client) ChatCompletion(request *payload.Request, ctx context.Context) (
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Error: Status Code %d.\n", resp.StatusCode)
+	}
+
 	var output Response
 	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 		return nil, err
 	}
 	return c.repackResponse(&output), nil
+}
+
+func (c *Client) ChatCompletionStream(request *payload.Request, ctx context.Context, onData func(*payload.Response) error) error {
+	repacked := c.repackRequest(request)
+	repacked.Stream = true
+	req, err := c.newJsonRequest(ctx, repacked)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.postJson(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("Error: Status Code %d.\n", resp.StatusCode)
+	}
+
+	reader := bufio.NewReader(resp.Body)
+	for {
+		line, err := reader.ReadBytes('\n')
+		if err != nil {
+			return err
+		}
+
+		line = bytes.TrimSpace(line)
+		if !bytes.HasPrefix(line, dataPrefix) {
+			continue
+		}
+		line = bytes.TrimPrefix(line, dataPrefix)
+
+		if bytes.HasSuffix(line, dataSuffix) {
+			break
+		}
+
+		var output ResponseStream
+		if err := json.Unmarshal(line, &output); err != nil {
+			return err
+		}
+
+		if err := onData(c.repackResponseStream(&output)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Client) newJsonRequest(ctx context.Context, request *Request) (*http.Request, error) {
@@ -100,6 +158,17 @@ func (c *Client) repackResponse(response *Response) *payload.Response {
 	}
 }
 
+func (c *Client) repackResponseStream(response *ResponseStream) *payload.Response {
+	var message payload.Message
+	if len(response.Choices) > 0 {
+		message.Role = response.Choices[0].Delta.Role
+		message.Content = response.Choices[0].Delta.Content
+	}
+	return &payload.Response{
+		Message: &message,
+	}
+}
+
 type Request struct {
 	Model    string     `json:"model"`
 	Messages []*Message `json:"messages"`
@@ -117,7 +186,13 @@ type Response struct {
 }
 
 type Choice struct {
-	Index        int      `json:"index"`
-	FinishReason string   `json:"finish_reason"`
-	Message      *Message `json:"message"`
+	Message *Message `json:"message"`
+}
+
+type ResponseStream struct {
+	Choices []*ChoiceStream `json:"choices"`
+}
+
+type ChoiceStream struct {
+	Delta Message `json:"delta"`
 }

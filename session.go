@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/monochromegane/aiforall/internal/llm"
+	"github.com/monochromegane/aiforall/internal/payload"
 )
 
 type Session struct {
@@ -16,10 +17,11 @@ type Session struct {
 	SystemPromptTemplatePath string
 	UserPromptTemplatePath   string
 	Interactive              bool
+	Stream                   bool
 	Client                   llm.LLMClient
 }
 
-func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive bool) *Session {
+func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream bool) *Session {
 	client := llm.GetLLMClient(history.Model)
 	return &Session{
 		Config:                   config,
@@ -27,6 +29,7 @@ func NewSession(config *Config, history *History, systemPromptTemplatePath, user
 		SystemPromptTemplatePath: systemPromptTemplatePath,
 		UserPromptTemplatePath:   userPromptTemplatePath,
 		Interactive:              interactive,
+		Stream:                   stream,
 		Client:                   client,
 	}
 }
@@ -51,11 +54,10 @@ func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.
 			fmt.Fprintln(w, fmt.Sprintf("> %s", line))
 		}
 
-		message, err := s.chatCompletion(ctx, userPrompt)
+		err = s.chatCompletionAndPrint(ctx, userPrompt, w)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w, message)
 		fmt.Fprintln(w)
 	}
 
@@ -75,26 +77,47 @@ func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.
 			break
 		}
 
-		message, err := s.chatCompletion(ctx, userPrompt)
+		err := s.chatCompletionAndPrint(ctx, userPrompt, w)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w, message)
 		fmt.Fprint(w, "\n> ")
 	}
 
 	return nil
 }
 
-func (s *Session) chatCompletion(ctx context.Context, userPrompt string) (string, error) {
+func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string, w io.Writer) error {
 	ctx = context.WithValue(ctx, "openai-api-key", s.Config.OpenAIAPIKey)
 
 	s.History.AddMessage("user", userPrompt)
-	response, err := s.Client.ChatCompletion(s.History.Request, ctx)
-	if err != nil {
-		return "", err
-	}
-	s.History.AddMessage(response.Message.Role, response.Message.Content)
 
-	return response.Message.Content, err
+	role := ""
+	message := ""
+	if s.Stream {
+		err := s.Client.ChatCompletionStream(s.History.Request, ctx, func(response *payload.Response) error {
+			if r := response.Message.Role; r != "" {
+				role = r
+			}
+			chunk := response.Message.Content
+			message += chunk
+			fmt.Fprint(w, chunk)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(w)
+	} else {
+		response, err := s.Client.ChatCompletion(s.History.Request, ctx)
+		if err != nil {
+			return err
+		}
+		role = response.Message.Role
+		message = response.Message.Content
+		fmt.Fprintln(w, message)
+	}
+	s.History.AddMessage(role, message)
+
+	return nil
 }

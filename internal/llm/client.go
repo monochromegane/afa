@@ -9,6 +9,7 @@ import (
 
 type LLMClient interface {
 	ChatCompletion(*payload.Request, context.Context) (*payload.Response, error)
+	ChatCompletionStream(*payload.Request, context.Context, func(*payload.Response) error) error
 }
 
 func GetLLMClient(model string) LLMClient {
