@@ -79,6 +79,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		history,
 		ai.WorkSpace.TemplatePath("system", ai.SystemPromptTemplate),
 		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
+		ai.Interactive,
 	)
 	return session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
 }

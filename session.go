@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -14,20 +15,23 @@ type Session struct {
 	History                  *History
 	SystemPromptTemplatePath string
 	UserPromptTemplatePath   string
+	Interactive              bool
+	Client                   llm.LLMClient
 }
 
-func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string) *Session {
+func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive bool) *Session {
+	client := llm.GetLLMClient(history.Model)
 	return &Session{
 		Config:                   config,
 		History:                  history,
 		SystemPromptTemplatePath: systemPromptTemplatePath,
 		UserPromptTemplatePath:   userPromptTemplatePath,
+		Interactive:              interactive,
+		Client:                   client,
 	}
 }
 
 func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.Reader, w io.Writer) error {
-	client := llm.GetLLMClient(s.History.Model)
-
 	if s.History.IsNewSession() {
 		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin)
 		if err != nil {
@@ -41,25 +45,56 @@ func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.
 		if err != nil {
 			return err
 		}
-		s.History.AddMessage("user", userPrompt)
-	}
 
-	if lastMessage := s.History.LastMessage(); lastMessage.IsAsUser() {
-		lines := strings.Split(lastMessage.Content, "\n")
+		lines := strings.Split(userPrompt, "\n")
 		for _, line := range lines {
 			fmt.Fprintln(w, fmt.Sprintf("> %s", line))
 		}
+
+		message, err := s.chatCompletion(ctx, userPrompt)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(w, message)
+		fmt.Fprintln(w)
 	}
 
-	ctx = context.WithValue(ctx, "openai-api-key", s.Config.OpenAIAPIKey)
-	response, err := client.ChatCompletion(s.History.Request, ctx)
-	if err != nil {
-		return err
+	if !s.Interactive {
+		return nil
 	}
 
-	s.History.AddMessage(response.Message.Role, response.Message.Content)
-	fmt.Fprintln(w, response.Message.Content)
-	fmt.Fprintln(w)
+	fmt.Fprint(w, "> ")
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		userPrompt := scanner.Text()
+		if userPrompt == "" {
+			fmt.Fprint(w, "> ")
+			continue
+		}
+		if userPrompt == "exit" {
+			break
+		}
+
+		message, err := s.chatCompletion(ctx, userPrompt)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(w, message)
+		fmt.Fprint(w, "\n> ")
+	}
 
 	return nil
+}
+
+func (s *Session) chatCompletion(ctx context.Context, userPrompt string) (string, error) {
+	ctx = context.WithValue(ctx, "openai-api-key", s.Config.OpenAIAPIKey)
+
+	s.History.AddMessage("user", userPrompt)
+	response, err := s.Client.ChatCompletion(s.History.Request, ctx)
+	if err != nil {
+		return "", err
+	}
+	s.History.AddMessage(response.Message.Role, response.Message.Content)
+
+	return response.Message.Content, err
 }
