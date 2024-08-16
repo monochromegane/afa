@@ -26,11 +26,3 @@ func (h *History) IsNewSession() bool {
 func (h *History) AddMessage(role, content string) {
 	h.Messages = append(h.Messages, &payload.Message{Role: role, Content: content})
 }
-
-func (h *History) LastMessage() *HistoryMessage {
-	return &HistoryMessage{h.Messages[len(h.Messages)-1]}
-}
-
-func (m *HistoryMessage) IsAsUser() bool {
-	return m.Role == "user"
-}
