@@ -34,9 +34,9 @@ func NewSession(config *Config, history *History, systemPromptTemplatePath, user
 	}
 }
 
-func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.Reader, w io.Writer) error {
+func (s *Session) Start(message, messageStdin string, files []string, ctx context.Context, r io.Reader, w io.Writer) error {
 	if s.History.IsNewSession() {
-		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin)
+		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (s *Session) Start(message, messageStdin string, ctx context.Context, r io.
 	}
 
 	if message != "" || messageStdin != "" {
-		userPrompt, err := NewPrompt(s.UserPromptTemplatePath, "", message, messageStdin)
+		userPrompt, err := NewPrompt(s.UserPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {
 			return err
 		}

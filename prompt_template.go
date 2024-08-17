@@ -7,7 +7,19 @@ import (
 	"text/template"
 )
 
-func NewPrompt(promptTemplatePath, ctxString, message, messageStdin string) (string, error) {
+type PromptContext struct {
+	Message      string
+	MessageStdin string
+	Files        []*PromptFile
+	Context      map[string]string
+}
+
+type PromptFile struct {
+	Name    string
+	Content string
+}
+
+func NewPrompt(promptTemplatePath, ctxString, message, messageStdin string, files []string) (string, error) {
 	if _, err := os.Stat(promptTemplatePath); os.IsNotExist(err) {
 		return "", err
 	}
@@ -21,7 +33,7 @@ func NewPrompt(promptTemplatePath, ctxString, message, messageStdin string) (str
 		return "", err
 	}
 
-	promptContext, err := newPromptContext(ctxString, message, messageStdin)
+	promptContext, err := newPromptContext(ctxString, message, messageStdin, files)
 	if err != nil {
 		return "", err
 	}
@@ -34,7 +46,7 @@ func NewPrompt(promptTemplatePath, ctxString, message, messageStdin string) (str
 	return prompt.String(), nil
 }
 
-func newPromptContext(ctxString, message, messageStdin string) (map[string]string, error) {
+func newPromptContext(ctxString, message, messageStdin string, files []string) (*PromptContext, error) {
 	if ctxString == "" {
 		ctxString = "{}"
 	}
@@ -42,7 +54,24 @@ func newPromptContext(ctxString, message, messageStdin string) (map[string]strin
 	if err := json.Unmarshal([]byte(ctxString), &ctx); err != nil {
 		return nil, err
 	}
-	ctx["Message"] = message
-	ctx["MessageStdin"] = messageStdin
-	return ctx, nil
+
+	var fileData []*PromptFile
+	for _, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		fileData = append(fileData, &PromptFile{
+			Name:    file,
+			Content: string(content),
+		})
+	}
+
+	return &PromptContext{
+		Message:      message,
+		MessageStdin: messageStdin,
+		Files:        fileData,
+		Context:      ctx,
+	}, nil
 }

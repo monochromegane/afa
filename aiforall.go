@@ -27,6 +27,7 @@ type AIForAll struct {
 	RunsOn               string
 	Interactive          bool
 	Stream               bool
+	Files                []string
 }
 
 func NewAIForAll(configDir, cacheDir string) *AIForAll {
@@ -99,7 +100,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.Interactive,
 		ai.Stream,
 	)
-	err = session.Start(ai.Message, ai.MessageStdin, context.Background(), ai.Input, ai.Output)
+	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), ai.Input, ai.Output)
 	if err != nil {
 		return err
 	}

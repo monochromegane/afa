@@ -36,7 +36,11 @@ type NewCommand struct {
 func (c NewCommand) Name() string { return "new" }
 
 func (c *NewCommand) Parse(args []string) error {
-	return c.flagSet.Parse(args)
+	if err := c.flagSet.Parse(args); err != nil {
+		return err
+	}
+	c.aiForAll.Files = c.flagSet.Args()
+	return nil
 }
 
 func (c *NewCommand) Run() error {
@@ -51,7 +55,11 @@ type SourceCommand struct {
 func (c SourceCommand) Name() string { return "source" }
 
 func (c *SourceCommand) Parse(args []string) error {
-	return c.flagSet.Parse(args)
+	if err := c.flagSet.Parse(args); err != nil {
+		return err
+	}
+	c.aiForAll.Files = c.flagSet.Args()
+	return nil
 }
 
 func (c *SourceCommand) Run() error {
@@ -66,7 +74,11 @@ type ResumeCommand struct {
 func (c ResumeCommand) Name() string { return "resume" }
 
 func (c *ResumeCommand) Parse(args []string) error {
-	return c.flagSet.Parse(args)
+	if err := c.flagSet.Parse(args); err != nil {
+		return err
+	}
+	c.aiForAll.Files = c.flagSet.Args()
+	return nil
 }
 
 func (c *ResumeCommand) Run() error {
