@@ -37,6 +37,7 @@ func (w *WorkSpace) setupDirs() error {
 		w.ConfigDir,
 		w.TemplateDir("system"),
 		w.TemplateDir("user"),
+		w.SchemaDir(),
 		w.CacheDir,
 		w.SessionsDir(),
 		w.SidDir(),
@@ -82,6 +83,14 @@ func (w *WorkSpace) TemplatePath(role, name string) string {
 	return path.Join(w.TemplateDir(role), filepath.Clean(fmt.Sprintf("%s.tmpl", name)))
 }
 
+func (w *WorkSpace) SchemaDir() string {
+	return path.Join(w.ConfigDir, "schemas")
+}
+
+func (w *WorkSpace) SchemaPath(name string) string {
+	return path.Join(w.SchemaDir(), filepath.Clean(fmt.Sprintf("%s.json", name)))
+}
+
 func (w *WorkSpace) SessionsDir() string {
 	return path.Join(w.CacheDir, "sessions")
 }
@@ -102,13 +111,37 @@ func (w *WorkSpace) SessionPath(name string) string {
 	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", name)))
 }
 
-func (w *WorkSpace) SetupSession(sessionPath, model string) error {
-	history := NewHistory(model)
+func (w *WorkSpace) SetupSession(sessionPath, model, schema string) error {
+	rawSchema, err := w.LoadSchema(schema)
+	if schema != "" && err != nil {
+		return err
+	}
+
+	history := NewHistory(model, schema, rawSchema)
 	jsonSession, err := json.Marshal(history)
 	if err != nil {
 		return err
 	}
 	return w.writeFileIfNotExist(sessionPath, jsonSession)
+}
+
+func (w *WorkSpace) LoadSchema(schema string) (*json.RawMessage, error) {
+	path := w.SchemaPath(schema)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return nil, err
+	}
+
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var raw json.RawMessage
+	if err := json.Unmarshal(file, &raw); err != nil {
+		return nil, err
+	}
+
+	return &raw, nil
 }
 
 func (w *WorkSpace) SaveSession(sessionName, runsOn string, history *History) error {

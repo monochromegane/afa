@@ -111,6 +111,7 @@ func GetNewCommand() (Command, error) {
 
 	flagSet.StringVar(&aiForAll.SystemPromptTemplate, "S", "default", "Name of system prompt template.")
 	flagSet.StringVar(&aiForAll.Model, "M", "gpt-4o-mini", "Name of Model.")
+	flagSet.StringVar(&aiForAll.Schema, "J", "", "Name of JSON schema for response format.")
 
 	return &NewCommand{
 		flagSet:  flagSet,

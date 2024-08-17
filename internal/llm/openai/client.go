@@ -141,10 +141,22 @@ func (c *Client) repackRequest(request *payload.Request) *Request {
 			Content: message.Content,
 		}
 	}
-	return &Request{
+	repacked := &Request{
 		Model:    request.Model,
 		Messages: messages,
 	}
+
+	if request.JsonSchema != nil {
+		repacked.ResponseFormat = &ResponseFormat{
+			Type: "json_schema",
+			JsonSchema: &JsonSchema{
+				Name:   request.JsonSchema.Name,
+				Strict: true,
+				Schema: request.JsonSchema.Schema,
+			},
+		}
+	}
+	return repacked
 }
 
 func (c *Client) repackResponse(response *Response) *payload.Response {
@@ -170,9 +182,10 @@ func (c *Client) repackResponseStream(response *ResponseStream) *payload.Respons
 }
 
 type Request struct {
-	Model    string     `json:"model"`
-	Messages []*Message `json:"messages"`
-	Stream   bool       `json:"stream"`
+	Model          string          `json:"model"`
+	Messages       []*Message      `json:"messages"`
+	Stream         bool            `json:"stream"`
+	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
 }
 
 type Message struct {
@@ -195,4 +208,15 @@ type ResponseStream struct {
 
 type ChoiceStream struct {
 	Delta Message `json:"delta"`
+}
+
+type ResponseFormat struct {
+	Type       string      `json:"type"`
+	JsonSchema *JsonSchema `json:"json_schema"`
+}
+
+type JsonSchema struct {
+	Name   string           `json:"name"`
+	Strict bool             `json:"strict"`
+	Schema *json.RawMessage `json:"schema"`
 }

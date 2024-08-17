@@ -20,6 +20,7 @@ type AIForAll struct {
 
 	SystemPromptTemplate string
 	UserPromptTemplate   string
+	Schema               string
 	Model                string
 	SessionName          string
 	Message              string
@@ -54,7 +55,7 @@ func (ai *AIForAll) Init() error {
 func (ai *AIForAll) New() error {
 	ai.SessionName = ai.sessionNameFromTime(time.Now())
 	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
-	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model); err != nil {
+	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model, ai.Schema); err != nil {
 		return err
 	}
 	return ai.startSession(sessionPath)

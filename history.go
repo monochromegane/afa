@@ -1,6 +1,10 @@
 package main
 
-import "github.com/monochromegane/afa/internal/payload"
+import (
+	"encoding/json"
+
+	"github.com/monochromegane/afa/internal/payload"
+)
 
 type History struct {
 	*payload.Request
@@ -10,13 +14,18 @@ type HistoryMessage struct {
 	*payload.Message
 }
 
-func NewHistory(model string) *History {
-	return &History{
-		&payload.Request{
-			Model:    model,
-			Messages: []*payload.Message{},
-		},
+func NewHistory(model, schema string, rawSchema *json.RawMessage) *History {
+	request := &payload.Request{
+		Model:    model,
+		Messages: []*payload.Message{},
 	}
+	if schema != "" {
+		request.JsonSchema = &payload.JsonSchema{
+			Name:   schema,
+			Schema: rawSchema,
+		}
+	}
+	return &History{request}
 }
 
 func (h *History) IsNewSession() bool {
