@@ -53,6 +53,13 @@ func (c *Client) ChatCompletion(request *payload.Request, ctx context.Context) (
 	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 		return nil, err
 	}
+
+	if len(output.Choices) > 0 {
+		if refusal := output.Choices[0].Message.Refusal; refusal != "" {
+			return nil, fmt.Errorf("Refused to respond %s.", refusal)
+		}
+	}
+
 	return c.repackResponse(&output), nil
 }
 
@@ -94,6 +101,12 @@ func (c *Client) ChatCompletionStream(request *payload.Request, ctx context.Cont
 		var output ResponseStream
 		if err := json.Unmarshal(line, &output); err != nil {
 			return err
+		}
+
+		if len(output.Choices) > 0 {
+			if refusal := output.Choices[0].Delta.Refusal; refusal != "" {
+				return fmt.Errorf("Refused to respond %s.", refusal)
+			}
 		}
 
 		if err := onData(c.repackResponseStream(&output)); err != nil {
