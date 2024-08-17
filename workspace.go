@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"time"
 )
 
 type WorkSpace struct {
@@ -91,16 +90,16 @@ func (w *WorkSpace) SidDir() string {
 	return path.Join(w.CacheDir, "sid")
 }
 
+func (w *WorkSpace) SidPath(name string) string {
+	return path.Join(w.SidDir(), filepath.Clean(fmt.Sprintf("%s.sid", name)))
+}
+
 func (w *WorkSpace) ConfigPath() string {
 	return path.Join(w.ConfigDir, "config.json")
 }
 
-func (w *WorkSpace) SessionPathFromTime(startedAt time.Time) string {
-	return w.SessionPathFromName(startedAt.Format("2006-01-02_15-04-05"))
-}
-
-func (w *WorkSpace) SessionPathFromName(sessionName string) string {
-	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", sessionName)))
+func (w *WorkSpace) SessionPath(name string) string {
+	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", name)))
 }
 
 func (w *WorkSpace) SetupSession(sessionPath, model string) error {
@@ -112,12 +111,18 @@ func (w *WorkSpace) SetupSession(sessionPath, model string) error {
 	return w.writeFileIfNotExist(sessionPath, jsonSession)
 }
 
-func (w *WorkSpace) SaveSession(sessionPath string, history *History) error {
+func (w *WorkSpace) SaveSession(sessionName, runsOn string, history *History) error {
 	jsonSession, err := json.Marshal(history)
 	if err != nil {
 		return err
 	}
-	return w.writeFile(sessionPath, jsonSession)
+
+	err = w.writeFile(w.SessionPath(sessionName), jsonSession)
+	if err != nil {
+		return err
+	}
+
+	return w.writeFile(w.SidPath(runsOn), []byte(sessionName))
 }
 
 func (w *WorkSpace) LoadHistory(path string) (*History, error) {

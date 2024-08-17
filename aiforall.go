@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -22,6 +24,7 @@ type AIForAll struct {
 	SessionName          string
 	Message              string
 	MessageStdin         string
+	RunsOn               string
 	Interactive          bool
 	Stream               bool
 }
@@ -31,6 +34,7 @@ func NewAIForAll(configDir, cacheDir string) *AIForAll {
 		WorkSpace: NewWorkSpace(configDir, cacheDir),
 		Input:     os.Stdin,
 		Output:    os.Stdout,
+		RunsOn:    strconv.Itoa(os.Getppid()),
 	}
 }
 
@@ -47,7 +51,8 @@ func (ai *AIForAll) Init() error {
 }
 
 func (ai *AIForAll) New() error {
-	sessionPath := ai.WorkSpace.SessionPathFromTime(time.Now())
+	ai.SessionName = ai.sessionNameFromTime(time.Now())
+	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
 	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model); err != nil {
 		return err
 	}
@@ -55,7 +60,7 @@ func (ai *AIForAll) New() error {
 }
 
 func (ai *AIForAll) Source() error {
-	sessionPath := ai.WorkSpace.SessionPathFromName(ai.SessionName)
+	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
 	if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
 		return fmt.Errorf("%s: no such session log", sessionPath)
 	}
@@ -63,9 +68,18 @@ func (ai *AIForAll) Source() error {
 }
 
 func (ai *AIForAll) Resume() error {
-	fmt.Println("Run as resume mode.")
-	sessionPath := ai.WorkSpace.SessionPathFromName(ai.SessionName)
-	return ai.startSession(sessionPath)
+	sidPath := ai.WorkSpace.SidPath(ai.RunsOn)
+	if _, err := os.Stat(sidPath); os.IsNotExist(err) {
+		return fmt.Errorf("%s: no such sid", sidPath)
+	}
+
+	data, err := os.ReadFile(sidPath)
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(string(data), "\n")
+	ai.SessionName = lines[0]
+	return ai.Source()
 }
 
 func (ai *AIForAll) startSession(sessionPath string) error {
@@ -90,5 +104,9 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		return err
 	}
 
-	return ai.WorkSpace.SaveSession(sessionPath, session.History)
+	return ai.WorkSpace.SaveSession(ai.SessionName, ai.RunsOn, session.History)
+}
+
+func (ai *AIForAll) sessionNameFromTime(startedAt time.Time) string {
+	return startedAt.Format("2006-01-02_15-04-05")
 }

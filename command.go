@@ -147,6 +147,10 @@ func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 	flagSet.StringVar(&aiForAll.UserPromptTemplate, "U", "default", "Name of user prompt template.")
 	flagSet.BoolVar(&aiForAll.Interactive, "i", false, "Runs in interactive mode; set to false when standard input is passed.")
 	flagSet.BoolVar(&aiForAll.Stream, "s", false, "Runs in stream mode.")
+	flagSet.Func("R", "Resume based on the identifier of latest session. (default \"$PPID\")", func(runsOn string) error {
+		aiForAll.RunsOn = runsOn
+		return nil
+	})
 
 	if hasStdin() {
 		inputStdin, err := io.ReadAll(os.Stdin)
