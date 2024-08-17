@@ -1,6 +1,6 @@
 package main
 
-import "github.com/monochromegane/aiforall/internal/payload"
+import "github.com/monochromegane/afa/internal/payload"
 
 type History struct {
 	*payload.Request

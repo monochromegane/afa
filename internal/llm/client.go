@@ -3,8 +3,8 @@ package llm
 import (
 	"context"
 
-	"github.com/monochromegane/aiforall/internal/llm/openai"
-	"github.com/monochromegane/aiforall/internal/payload"
+	"github.com/monochromegane/afa/internal/llm/openai"
+	"github.com/monochromegane/afa/internal/payload"
 )
 
 type LLMClient interface {

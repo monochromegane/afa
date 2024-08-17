@@ -7,8 +7,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/monochromegane/aiforall/internal/llm"
-	"github.com/monochromegane/aiforall/internal/payload"
+	"github.com/monochromegane/afa/internal/llm"
+	"github.com/monochromegane/afa/internal/payload"
 )
 
 type Session struct {

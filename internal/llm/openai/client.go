@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/monochromegane/aiforall/internal/payload"
+	"github.com/monochromegane/afa/internal/payload"
 )
 
 const (

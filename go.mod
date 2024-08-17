@@ -1,4 +1,4 @@
-module github.com/monochromegane/aiforall
+module github.com/monochromegane/afa
 
 go 1.23.0
 
