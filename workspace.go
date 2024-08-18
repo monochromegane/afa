@@ -25,6 +25,11 @@ func NewWorkSpace(configDir, cacheDir string) *WorkSpace {
 	}
 }
 
+func (w *WorkSpace) IsNotExist() bool {
+	_, err := os.Stat(w.SecretPath())
+	return os.IsNotExist(err)
+}
+
 func (w *WorkSpace) Setup(option *Option, secret *Secret) error {
 	if err := w.setupDirs(); err != nil {
 		return err

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"path"
@@ -44,6 +45,9 @@ func (c *NewCommand) Parse(args []string) error {
 }
 
 func (c *NewCommand) Run() error {
+	if c.aiForAll.WorkSpace.IsNotExist() {
+		return workSpaceNotExistError()
+	}
 	return c.aiForAll.New()
 }
 
@@ -63,6 +67,9 @@ func (c *SourceCommand) Parse(args []string) error {
 }
 
 func (c *SourceCommand) Run() error {
+	if c.aiForAll.WorkSpace.IsNotExist() {
+		return workSpaceNotExistError()
+	}
 	return c.aiForAll.Source()
 }
 
@@ -82,6 +89,9 @@ func (c *ResumeCommand) Parse(args []string) error {
 }
 
 func (c *ResumeCommand) Run() error {
+	if c.aiForAll.WorkSpace.IsNotExist() {
+		return workSpaceNotExistError()
+	}
 	return c.aiForAll.Resume()
 }
 
@@ -226,6 +236,10 @@ func hasStdin() bool {
 		return (stat.Mode() & os.ModeCharDevice) == 0
 	}
 	return false
+}
+
+func workSpaceNotExistError() error {
+	return fmt.Errorf("No workSpace exists. Please run \"afa init\"")
 }
 
 func newAIForAll() (*AIForAll, error) {
