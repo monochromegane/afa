@@ -17,27 +17,26 @@ type AIForAll struct {
 	WorkSpace *WorkSpace
 	Input     io.Reader
 	Output    io.Writer
+	Option    *Option
 
-	SystemPromptTemplate string
-	UserPromptTemplate   string
-	Schema               string
-	Model                string
-	SessionName          string
-	Message              string
-	MessageStdin         string
-	RunsOn               string
-	Interactive          bool
-	Stream               bool
-	Files                []string
+	SessionName  string
+	Message      string
+	MessageStdin string
+	Files        []string
 }
 
-func NewAIForAll(configDir, cacheDir string) *AIForAll {
+func NewAIForAll(configDir, cacheDir string) (*AIForAll, error) {
+	workSpace := NewWorkSpace(configDir, cacheDir)
+	option, err := workSpace.LoadOption(strconv.Itoa(os.Getppid()))
+	if err != nil {
+		return nil, err
+	}
 	return &AIForAll{
-		WorkSpace: NewWorkSpace(configDir, cacheDir),
+		WorkSpace: workSpace,
 		Input:     os.Stdin,
 		Output:    os.Stdout,
-		RunsOn:    strconv.Itoa(os.Getppid()),
-	}
+		Option:    option,
+	}, nil
 }
 
 func (ai *AIForAll) Init() error {
@@ -46,16 +45,13 @@ func (ai *AIForAll) Init() error {
 	if err != nil {
 		return fmt.Errorf("Failed to read OpenAI API key: %v", err)
 	}
-	config := &Config{
-		OpenAIAPIKey: string(apiKey),
-	}
-	return ai.WorkSpace.Setup(config)
+	return ai.WorkSpace.Setup(NewOption(""), NewSecret(string(apiKey)))
 }
 
 func (ai *AIForAll) New() error {
 	ai.SessionName = ai.sessionNameFromTime(time.Now())
 	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
-	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Model, ai.Schema); err != nil {
+	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Option.Model, ai.Option.Schema); err != nil {
 		return err
 	}
 	return ai.startSession(sessionPath)
@@ -70,7 +66,7 @@ func (ai *AIForAll) Source() error {
 }
 
 func (ai *AIForAll) Resume() error {
-	sidPath := ai.WorkSpace.SidPath(ai.RunsOn)
+	sidPath := ai.WorkSpace.SidPath(ai.Option.RunsOn)
 	if _, err := os.Stat(sidPath); os.IsNotExist(err) {
 		return fmt.Errorf("%s: no such sid", sidPath)
 	}
@@ -89,24 +85,24 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	if err != nil {
 		return err
 	}
-	config, err := ai.WorkSpace.LoadConfig()
+	secret, err := ai.WorkSpace.LoadSecret()
 	if err != nil {
 		return err
 	}
 	session := NewSession(
-		config,
+		secret,
 		history,
-		ai.WorkSpace.TemplatePath("system", ai.SystemPromptTemplate),
-		ai.WorkSpace.TemplatePath("user", ai.UserPromptTemplate),
-		ai.Interactive,
-		ai.Stream,
+		ai.WorkSpace.TemplatePath("system", ai.Option.SystemPromptTemplate),
+		ai.WorkSpace.TemplatePath("user", ai.Option.UserPromptTemplate),
+		ai.Option.Interactive,
+		ai.Option.Stream,
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), ai.Input, ai.Output)
 	if err != nil {
 		return err
 	}
 
-	return ai.WorkSpace.SaveSession(ai.SessionName, ai.RunsOn, session.History)
+	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.RunsOn, session.History)
 }
 
 func (ai *AIForAll) sessionNameFromTime(startedAt time.Time) string {

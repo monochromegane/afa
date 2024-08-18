@@ -109,9 +109,24 @@ func GetNewCommand() (Command, error) {
 		return nil, err
 	}
 
-	flagSet.StringVar(&aiForAll.SystemPromptTemplate, "S", "default", "Name of system prompt template.")
-	flagSet.StringVar(&aiForAll.Model, "M", "gpt-4o-mini", "Name of Model.")
-	flagSet.StringVar(&aiForAll.Schema, "J", "", "Name of JSON schema for response format.")
+	flagSet.StringVar(
+		&aiForAll.Option.SystemPromptTemplate,
+		"s",
+		aiForAll.Option.SystemPromptTemplate,
+		"Name of system prompt template.",
+	)
+	flagSet.StringVar(
+		&aiForAll.Option.Model,
+		"m",
+		aiForAll.Option.Model,
+		"Name of Model.",
+	)
+	flagSet.StringVar(
+		&aiForAll.Option.Schema,
+		"j",
+		aiForAll.Option.Schema,
+		"Name of JSON schema for response format.",
+	)
 
 	return &NewCommand{
 		flagSet:  flagSet,
@@ -130,7 +145,12 @@ func GetSourceCommand() (Command, error) {
 		return nil, err
 	}
 
-	flagSet.StringVar(&aiForAll.SessionName, "l", "", "Log name of session.")
+	flagSet.StringVar(
+		&aiForAll.SessionName,
+		"l",
+		aiForAll.SessionName,
+		"Log name of session.",
+	)
 
 	return &SourceCommand{
 		flagSet:  flagSet,
@@ -156,14 +176,38 @@ func GetResumeCommand() (Command, error) {
 }
 
 func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
-	flagSet.StringVar(&aiForAll.Message, "m", "", "Message as initial prompt.")
-	flagSet.StringVar(&aiForAll.UserPromptTemplate, "U", "default", "Name of user prompt template.")
-	flagSet.BoolVar(&aiForAll.Interactive, "i", false, "Runs in interactive mode; set to false when standard input is passed.")
-	flagSet.BoolVar(&aiForAll.Stream, "s", false, "Runs in stream mode.")
-	flagSet.Func("R", "Resume based on the identifier of latest session. (default \"$PPID\")", func(runsOn string) error {
-		aiForAll.RunsOn = runsOn
-		return nil
-	})
+	flagSet.StringVar(
+		&aiForAll.Message,
+		"p",
+		aiForAll.Message,
+		"Message as initial prompt.",
+	)
+	flagSet.StringVar(
+		&aiForAll.Option.UserPromptTemplate,
+		"u",
+		aiForAll.Option.UserPromptTemplate,
+		"Name of user prompt template.",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Interactive,
+		"I",
+		aiForAll.Option.Interactive,
+		"Runs in interactive mode; set to false when standard input is passed.",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Stream,
+		"S",
+		aiForAll.Option.Stream,
+		"Runs in stream mode.",
+	)
+	flagSet.Func(
+		"R",
+		"Resume based on the identifier of latest session. (default \"$PPID\")",
+		func(runsOn string) error {
+			aiForAll.Option.RunsOn = runsOn
+			return nil
+		},
+	)
 
 	if hasStdin() {
 		inputStdin, err := io.ReadAll(os.Stdin)
@@ -171,7 +215,7 @@ func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 			return err
 		}
 		aiForAll.MessageStdin = string(inputStdin)
-		aiForAll.Interactive = false
+		aiForAll.Option.Interactive = false
 	}
 
 	return nil
@@ -197,5 +241,5 @@ func newAIForAll() (*AIForAll, error) {
 	return NewAIForAll(
 		path.Join(configDir, "afa"),
 		path.Join(cacheDir, "afa"),
-	), nil
+	)
 }

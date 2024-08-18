@@ -11,7 +11,7 @@ import (
 )
 
 type Session struct {
-	Config                   *Config
+	Secret                   *Secret
 	History                  *History
 	SystemPromptTemplatePath string
 	UserPromptTemplatePath   string
@@ -20,10 +20,10 @@ type Session struct {
 	Client                   llm.LLMClient
 }
 
-func NewSession(config *Config, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream bool) *Session {
+func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream bool) *Session {
 	client := llm.GetLLMClient(history.Model)
 	return &Session{
-		Config:                   config,
+		Secret:                   secret,
 		History:                  history,
 		SystemPromptTemplatePath: systemPromptTemplatePath,
 		UserPromptTemplatePath:   userPromptTemplatePath,
@@ -90,7 +90,7 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 }
 
 func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string, w io.Writer) error {
-	ctx = context.WithValue(ctx, "openai-api-key", s.Config.OpenAIAPIKey)
+	ctx = context.WithValue(ctx, "openai-api-key", s.Secret.OpenAI.ApiKey)
 
 	s.History.AddMessage("user", userPrompt)
 

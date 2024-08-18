@@ -25,11 +25,11 @@ func NewWorkSpace(configDir, cacheDir string) *WorkSpace {
 	}
 }
 
-func (w *WorkSpace) Setup(config *Config) error {
+func (w *WorkSpace) Setup(option *Option, secret *Secret) error {
 	if err := w.setupDirs(); err != nil {
 		return err
 	}
-	return w.setupFiles(config)
+	return w.setupFiles(option, secret)
 }
 
 func (w *WorkSpace) setupDirs() error {
@@ -49,7 +49,7 @@ func (w *WorkSpace) setupDirs() error {
 	return nil
 }
 
-func (w *WorkSpace) setupFiles(config *Config) error {
+func (w *WorkSpace) setupFiles(option *Option, secret *Secret) error {
 	if err := w.writeFileIfNotExist(
 		w.TemplatePath("system", "default"),
 		[]byte("You are a helpful assistant."),
@@ -64,11 +64,19 @@ func (w *WorkSpace) setupFiles(config *Config) error {
 		return err
 	}
 
-	jsonConfig, err := json.MarshalIndent(config, "", "  ")
+	jsonOption, err := json.MarshalIndent(option, "", "  ")
 	if err != nil {
 		return err
 	}
-	if err := w.writeFileIfNotExist(w.ConfigPath(), jsonConfig); err != nil {
+	if err := w.writeFileIfNotExist(w.OptionPath(), jsonOption); err != nil {
+		return err
+	}
+
+	jsonSecret, err := json.MarshalIndent(secret, "", "  ")
+	if err != nil {
+		return err
+	}
+	if err := w.writeFileIfNotExist(w.SecretPath(), jsonSecret); err != nil {
 		return err
 	}
 
@@ -103,8 +111,12 @@ func (w *WorkSpace) SidPath(name string) string {
 	return path.Join(w.SidDir(), filepath.Clean(fmt.Sprintf("%s.sid", name)))
 }
 
-func (w *WorkSpace) ConfigPath() string {
-	return path.Join(w.ConfigDir, "config.json")
+func (w *WorkSpace) OptionPath() string {
+	return path.Join(w.ConfigDir, "option.json")
+}
+
+func (w *WorkSpace) SecretPath() string {
+	return path.Join(w.ConfigDir, "secret.json")
 }
 
 func (w *WorkSpace) SessionPath(name string) string {
@@ -176,8 +188,28 @@ func (w *WorkSpace) LoadHistory(path string) (*History, error) {
 	return &history, nil
 }
 
-func (w *WorkSpace) LoadConfig() (*Config, error) {
-	path := w.ConfigPath()
+func (w *WorkSpace) LoadOption(runsOn string) (*Option, error) {
+	option := NewOption(runsOn)
+
+	path := w.OptionPath()
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return option, nil
+	}
+
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(file, option); err != nil {
+		return nil, err
+	}
+
+	return option, nil
+}
+
+func (w *WorkSpace) LoadSecret() (*Secret, error) {
+	path := w.SecretPath()
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, err
 	}
@@ -187,12 +219,12 @@ func (w *WorkSpace) LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	var config Config
-	if err := json.Unmarshal(file, &config); err != nil {
+	var secret Secret
+	if err := json.Unmarshal(file, &secret); err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &secret, nil
 }
 
 func (w *WorkSpace) mkDirAllIfNotExist(dir string) error {
