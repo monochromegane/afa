@@ -10,19 +10,19 @@ import (
 func main() {
 	initCommand, err := GetInitCommand()
 	if err != nil {
-		log.Fatal("Error: Failed to get init command %v", err)
+		log.Fatal(fmt.Sprintf("Error: Failed to get init command. %v", err))
 	}
 	newCommand, err := GetNewCommand()
 	if err != nil {
-		log.Fatal("Error: Failed to get new command %v", err)
+		log.Fatal(fmt.Sprintf("Error: Failed to get new command. %v", err))
 	}
 	sourceCommand, err := GetSourceCommand()
 	if err != nil {
-		log.Fatal("Error: Failed to get source command %v", err)
+		log.Fatal(fmt.Sprintf("Error: Failed to get source command. %v", err))
 	}
 	resumeCommand, err := GetResumeCommand()
 	if err != nil {
-		log.Fatal("Error: Failed to get resume command %v", err)
+		log.Fatal(fmt.Sprintf("Error: Failed to get resume command. %v", err))
 	}
 
 	cmds := []Command{
@@ -46,10 +46,10 @@ func main() {
 	for _, cmd := range cmds {
 		if cmd.Name() == subCommand {
 			if err := cmd.Parse(os.Args[2:]); err != nil {
-				log.Fatal("Error: Failed to parse flags %v", err)
+				log.Fatal(fmt.Sprintf("Error: Failed to parse flags. %v", err))
 			}
 			if err := cmd.Run(); err != nil {
-				log.Fatal("Error: Failed to run %v", err)
+				log.Fatal(fmt.Sprintf("Error: Failed to run. %v", err))
 			}
 			match = true
 		}
