@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/monochromegane/afa/internal/llm"
 	"github.com/monochromegane/afa/internal/payload"
@@ -43,26 +42,25 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		s.History.AddMessage("system", systemPrompt)
 	}
 
-	if message != "" || messageStdin != "" {
+	runWithInput := false
+	if message != "" || messageStdin != "" || len(files) > 0 {
 		userPrompt, err := NewPrompt(s.UserPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {
 			return err
-		}
-
-		lines := strings.Split(userPrompt, "\n")
-		for _, line := range lines {
-			fmt.Fprintln(w, fmt.Sprintf("> %s", line))
 		}
 
 		err = s.chatCompletionAndPrint(ctx, userPrompt, w)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(w)
+		runWithInput = true
 	}
 
-	if !s.Interactive {
+	if runWithInput && !s.Interactive {
 		return nil
+	}
+	if runWithInput {
+		fmt.Fprintln(w)
 	}
 
 	fmt.Fprint(w, "> ")
@@ -80,6 +78,10 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		err := s.chatCompletionAndPrint(ctx, userPrompt, w)
 		if err != nil {
 			return err
+		}
+
+		if !s.Interactive {
+			break
 		}
 		fmt.Fprint(w, "\n> ")
 	}
