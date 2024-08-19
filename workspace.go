@@ -178,6 +178,10 @@ func (w *WorkSpace) SaveSession(sessionName, runsOn string, history *History) er
 	return w.writeFile(w.SidPath(runsOn), []byte(sessionName))
 }
 
+func (w *WorkSpace) RemoveSession(sessionName string) error {
+	return os.Remove(w.SessionPath(sessionName))
+}
+
 func (w *WorkSpace) LoadHistory(path string) (*History, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, err

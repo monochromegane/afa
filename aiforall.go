@@ -116,6 +116,9 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		return err
 	}
 
+	if session.History.FirstPrompt() == "" {
+		return ai.WorkSpace.RemoveSession(ai.SessionName)
+	}
 	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.Chat.RunsOn, session.History)
 }
 
