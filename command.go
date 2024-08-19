@@ -95,6 +95,21 @@ func (c *ResumeCommand) Run() error {
 	return c.aiForAll.Resume()
 }
 
+type ListCommand struct {
+	flagSet  *flag.FlagSet
+	aiForAll *AIForAll
+}
+
+func (c ListCommand) Name() string { return "list" }
+
+func (c *ListCommand) Parse(args []string) error {
+	return c.flagSet.Parse(args)
+}
+
+func (c *ListCommand) Run() error {
+	return c.aiForAll.List()
+}
+
 func GetInitCommand() (Command, error) {
 	flagSet := flag.NewFlagSet("init", flag.ExitOnError)
 	aiForAll, err := newAIForAll()
@@ -115,26 +130,26 @@ func GetNewCommand() (Command, error) {
 		return nil, err
 	}
 
-	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
 
 	flagSet.StringVar(
-		&aiForAll.Option.SystemPromptTemplate,
+		&aiForAll.Option.Chat.SystemPromptTemplate,
 		"s",
-		aiForAll.Option.SystemPromptTemplate,
+		aiForAll.Option.Chat.SystemPromptTemplate,
 		"Name of system prompt template.",
 	)
 	flagSet.StringVar(
-		&aiForAll.Option.Model,
+		&aiForAll.Option.Chat.Model,
 		"m",
-		aiForAll.Option.Model,
+		aiForAll.Option.Chat.Model,
 		"Name of Model.",
 	)
 	flagSet.StringVar(
-		&aiForAll.Option.Schema,
+		&aiForAll.Option.Chat.Schema,
 		"j",
-		aiForAll.Option.Schema,
+		aiForAll.Option.Chat.Schema,
 		"Name of JSON schema for response format.",
 	)
 
@@ -151,7 +166,7 @@ func GetSourceCommand() (Command, error) {
 		return nil, err
 	}
 
-	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
 
@@ -175,7 +190,7 @@ func GetResumeCommand() (Command, error) {
 		return nil, err
 	}
 
-	if err := setBasicFlags(aiForAll, flagSet); err != nil {
+	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
 
@@ -185,7 +200,33 @@ func GetResumeCommand() (Command, error) {
 	}, nil
 }
 
-func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
+func GetListCommand() (Command, error) {
+	flagSet := flag.NewFlagSet("list", flag.ExitOnError)
+	aiForAll, err := newAIForAll()
+	if err != nil {
+		return nil, err
+	}
+
+	flagSet.IntVar(
+		&aiForAll.Option.List.Count,
+		"n",
+		aiForAll.Option.List.Count,
+		"Print count sessions.",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.List.OrderByModify,
+		"t",
+		aiForAll.Option.List.OrderByModify,
+		"Sort by descending time modified (most recently session first).",
+	)
+
+	return &ListCommand{
+		flagSet:  flagSet,
+		aiForAll: aiForAll,
+	}, nil
+}
+
+func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 	flagSet.StringVar(
 		&aiForAll.Message,
 		"p",
@@ -193,28 +234,28 @@ func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		"Message as initial prompt.",
 	)
 	flagSet.StringVar(
-		&aiForAll.Option.UserPromptTemplate,
+		&aiForAll.Option.Chat.UserPromptTemplate,
 		"u",
-		aiForAll.Option.UserPromptTemplate,
+		aiForAll.Option.Chat.UserPromptTemplate,
 		"Name of user prompt template.",
 	)
 	flagSet.BoolVar(
-		&aiForAll.Option.Interactive,
+		&aiForAll.Option.Chat.Interactive,
 		"I",
-		aiForAll.Option.Interactive,
+		aiForAll.Option.Chat.Interactive,
 		"Runs in interactive mode; set to false when standard input is passed.",
 	)
 	flagSet.BoolVar(
-		&aiForAll.Option.Stream,
+		&aiForAll.Option.Chat.Stream,
 		"S",
-		aiForAll.Option.Stream,
+		aiForAll.Option.Chat.Stream,
 		"Runs in stream mode.",
 	)
 	flagSet.Func(
 		"R",
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
 		func(runsOn string) error {
-			aiForAll.Option.RunsOn = runsOn
+			aiForAll.Option.Chat.RunsOn = runsOn
 			return nil
 		},
 	)
@@ -225,7 +266,7 @@ func setBasicFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 			return err
 		}
 		aiForAll.MessageStdin = string(inputStdin)
-		aiForAll.Option.Interactive = false
+		aiForAll.Option.Chat.Interactive = false
 	}
 
 	return nil
@@ -239,7 +280,7 @@ func hasStdin() bool {
 }
 
 func workSpaceNotExistError() error {
-	return fmt.Errorf("No workSpace exists. Please run \"afa init\"")
+	return fmt.Errorf("No workSpace exists. Please run \"afa init\".")
 }
 
 func newAIForAll() (*AIForAll, error) {

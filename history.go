@@ -35,3 +35,12 @@ func (h *History) IsNewSession() bool {
 func (h *History) AddMessage(role, content string) {
 	h.Messages = append(h.Messages, &payload.Message{Role: role, Content: content})
 }
+
+func (h *History) FirstPrompt() string {
+	for _, message := range h.Messages {
+		if message.Role == "user" {
+			return message.Content
+		}
+	}
+	return ""
+}

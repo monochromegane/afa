@@ -3,9 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
+	"strings"
 )
 
 type WorkSpace struct {
@@ -108,6 +111,10 @@ func (w *WorkSpace) SessionsDir() string {
 	return path.Join(w.CacheDir, "sessions")
 }
 
+func (w *WorkSpace) SessionPath(name string) string {
+	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", name)))
+}
+
 func (w *WorkSpace) SidDir() string {
 	return path.Join(w.CacheDir, "sid")
 }
@@ -122,10 +129,6 @@ func (w *WorkSpace) OptionPath() string {
 
 func (w *WorkSpace) SecretPath() string {
 	return path.Join(w.ConfigDir, "secret.json")
-}
-
-func (w *WorkSpace) SessionPath(name string) string {
-	return path.Join(w.SessionsDir(), filepath.Clean(fmt.Sprintf("%s.json", name)))
 }
 
 func (w *WorkSpace) SetupSession(sessionPath, model, schema string) error {
@@ -230,6 +233,60 @@ func (w *WorkSpace) LoadSecret() (*Secret, error) {
 	}
 
 	return &secret, nil
+}
+
+func (w *WorkSpace) ListSessions(count int, orderByModify bool) ([]string, []*History, error) {
+	names := []string{}
+	histories := []*History{}
+
+	dirEntories, err := os.ReadDir(w.SessionsDir())
+	if err != nil {
+		return nil, nil, err
+	}
+	files := []fs.FileInfo{}
+	for _, dirEntry := range dirEntories {
+		if dirEntry.IsDir() {
+			continue
+		}
+		info, err := dirEntry.Info()
+		if err != nil {
+			return nil, nil, err
+		}
+		files = append(files, info)
+	}
+
+	if orderByModify {
+		sort.Slice(files, func(i, j int) bool {
+			return files[i].ModTime().After(files[j].ModTime())
+		})
+	} else {
+		sort.Slice(files, func(i, j int) bool {
+			return files[i].Name() > files[j].Name()
+		})
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		fileName := file.Name()
+		sessionName := strings.TrimSuffix(fileName, filepath.Ext(fileName))
+
+		history, err := w.LoadHistory(w.SessionPath(sessionName))
+		if err != nil {
+			return nil, nil, err
+		}
+
+		names = append(names, sessionName)
+		histories = append(histories, history)
+
+		if len(names) >= count {
+			break
+		}
+	}
+
+	return names, histories, nil
 }
 
 func (w *WorkSpace) mkDirAllIfNotExist(dir string) error {

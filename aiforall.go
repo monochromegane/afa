@@ -51,7 +51,7 @@ func (ai *AIForAll) Init() error {
 func (ai *AIForAll) New() error {
 	ai.SessionName = ai.sessionNameFromTime(time.Now())
 	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
-	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Option.Model, ai.Option.Schema); err != nil {
+	if err := ai.WorkSpace.SetupSession(sessionPath, ai.Option.Chat.Model, ai.Option.Chat.Schema); err != nil {
 		return err
 	}
 	return ai.startSession(sessionPath)
@@ -66,7 +66,7 @@ func (ai *AIForAll) Source() error {
 }
 
 func (ai *AIForAll) Resume() error {
-	sidPath := ai.WorkSpace.SidPath(ai.Option.RunsOn)
+	sidPath := ai.WorkSpace.SidPath(ai.Option.Chat.RunsOn)
 	if _, err := os.Stat(sidPath); os.IsNotExist(err) {
 		return fmt.Errorf("%s: no such sid", sidPath)
 	}
@@ -78,6 +78,17 @@ func (ai *AIForAll) Resume() error {
 	lines := strings.Split(string(data), "\n")
 	ai.SessionName = lines[0]
 	return ai.Source()
+}
+
+func (ai *AIForAll) List() error {
+	names, histories, err := ai.WorkSpace.ListSessions(ai.Option.List.Count, ai.Option.List.OrderByModify)
+	if err != nil {
+		return err
+	}
+	for i, name := range names {
+		fmt.Fprintf(ai.Output, "%s\t%s\n", name, strings.Split(histories[i].FirstPrompt(), "\n")[0])
+	}
+	return nil
 }
 
 func (ai *AIForAll) startSession(sessionPath string) error {
@@ -92,17 +103,17 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	session := NewSession(
 		secret,
 		history,
-		ai.WorkSpace.TemplatePath("system", ai.Option.SystemPromptTemplate),
-		ai.WorkSpace.TemplatePath("user", ai.Option.UserPromptTemplate),
-		ai.Option.Interactive,
-		ai.Option.Stream,
+		ai.WorkSpace.TemplatePath("system", ai.Option.Chat.SystemPromptTemplate),
+		ai.WorkSpace.TemplatePath("user", ai.Option.Chat.UserPromptTemplate),
+		ai.Option.Chat.Interactive,
+		ai.Option.Chat.Stream,
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), ai.Input, ai.Output)
 	if err != nil {
 		return err
 	}
 
-	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.RunsOn, session.History)
+	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.Chat.RunsOn, session.History)
 }
 
 func (ai *AIForAll) sessionNameFromTime(startedAt time.Time) string {

@@ -24,12 +24,17 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error: Failed to get resume command. %v", err))
 	}
+	listCommand, err := GetListCommand()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error: Failed to get list command. %v", err))
+	}
 
 	cmds := []Command{
 		initCommand,
 		newCommand,
 		sourceCommand,
 		resumeCommand,
+		listCommand,
 	}
 
 	names := []string{}
@@ -62,7 +67,7 @@ func main() {
 
 func subCommandNotFoundError(subcommands []string) error {
 	return fmt.Errorf(
-		"Error: No subcommand specified. Please provide one of the following subcommands: %s",
+		"Error: No subcommand specified. Please provide one of the following subcommands: %s.",
 		strings.Join(subcommands, ", "),
 	)
 }
