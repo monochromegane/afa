@@ -20,14 +20,14 @@ type ListOption struct {
 	OrderByModify bool `json:"order_by_modify"`
 }
 
-func NewOption(runsOn string) *Option {
+func NewOption() *Option {
 	return &Option{
 		Chat: &ChatOption{
 			Model:                "gpt-4o-mini",
 			SystemPromptTemplate: "default",
 			UserPromptTemplate:   "default",
 			Schema:               "",
-			RunsOn:               runsOn,
+			RunsOn:               "",
 			Interactive:          false,
 			Stream:               false,
 		},

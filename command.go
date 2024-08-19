@@ -251,13 +251,11 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		aiForAll.Option.Chat.Stream,
 		"Runs in stream mode.",
 	)
-	flagSet.Func(
+	flagSet.StringVar(
+		&aiForAll.Option.Chat.RunsOn,
 		"R",
+		aiForAll.Option.Chat.RunsOn,
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
-		func(runsOn string) error {
-			aiForAll.Option.Chat.RunsOn = runsOn
-			return nil
-		},
 	)
 
 	if hasStdin() {

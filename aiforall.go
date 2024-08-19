@@ -27,9 +27,12 @@ type AIForAll struct {
 
 func NewAIForAll(configDir, cacheDir string) (*AIForAll, error) {
 	workSpace := NewWorkSpace(configDir, cacheDir)
-	option, err := workSpace.LoadOption(strconv.Itoa(os.Getppid()))
+	option, err := workSpace.LoadOption()
 	if err != nil {
 		return nil, err
+	}
+	if option.Chat.RunsOn == "" {
+		option.Chat.RunsOn = strconv.Itoa(os.Getppid())
 	}
 	return &AIForAll{
 		WorkSpace: workSpace,
@@ -45,7 +48,7 @@ func (ai *AIForAll) Init() error {
 	if err != nil {
 		return fmt.Errorf("Failed to read OpenAI API key: %v", err)
 	}
-	return ai.WorkSpace.Setup(NewOption(""), NewSecret(string(apiKey)))
+	return ai.WorkSpace.Setup(NewOption(), NewSecret(string(apiKey)))
 }
 
 func (ai *AIForAll) New() error {

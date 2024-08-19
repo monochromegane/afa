@@ -196,8 +196,8 @@ func (w *WorkSpace) LoadHistory(path string) (*History, error) {
 	return &history, nil
 }
 
-func (w *WorkSpace) LoadOption(runsOn string) (*Option, error) {
-	option := NewOption(runsOn)
+func (w *WorkSpace) LoadOption() (*Option, error) {
+	option := NewOption()
 
 	path := w.OptionPath()
 	if _, err := os.Stat(path); os.IsNotExist(err) {
