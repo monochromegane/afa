@@ -278,7 +278,7 @@ func hasStdin() bool {
 }
 
 func workSpaceNotExistError() error {
-	return fmt.Errorf("No workSpace exists. Please run \"afa init\".")
+	return fmt.Errorf("No workspace exists. Please run \"afa init\".")
 }
 
 func newAIForAll() (*AIForAll, error) {
