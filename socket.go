@@ -118,6 +118,10 @@ func (w *SocketMessageWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
+func (w *SocketMessageWriter) Close() error {
+	return w.Conn.Close()
+}
+
 func (w *SocketMessageWriter) Prompt() error {
 	if _, err := w.Write([]byte("__AFA_PROMPT__")); err != nil {
 		return err

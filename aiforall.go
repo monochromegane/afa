@@ -17,7 +17,7 @@ import (
 type AIForAll struct {
 	WorkSpace *WorkSpace
 	Input     io.Reader
-	Output    io.Writer
+	Output    io.WriteCloser
 	Option    *Option
 
 	SessionName  string
@@ -104,7 +104,11 @@ func (ai *AIForAll) Show() error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(ai.Output, "%s", history.View())
+	_, output, err := ai.startViewer()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(output, "%s", history.View())
 	return nil
 }
 
@@ -117,47 +121,9 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	if err != nil {
 		return err
 	}
-
-	var input MessageReader = ai.Input
-	var output MessageWriter = &DefaultMessageWriter{ai.Output}
-	if ai.Option.Chat.Viewer && len(ai.Option.Chat.ViewerCommand) > 0 {
-		connChan := make(chan net.Conn)
-		errChan := make(chan error)
-		socketPath := ai.WorkSpace.SocketPath(ai.SessionName)
-
-		// start server
-		server, err := NewServer(socketPath)
-		if err != nil {
-			return err
-		}
-		server.Listen()
-		go func() {
-			conn, err := server.Accept()
-			if err != nil {
-				errChan <- err
-			}
-			connChan <- conn
-		}()
-
-		// start client as viewer
-		client, err := NewClient(socketPath, ai.Option.Chat.ViewerCommand)
-		if err != nil {
-			return err
-		}
-		go func() {
-			if err := client.Run(); err != nil {
-				errChan <- err
-			}
-		}()
-
-		// get conn
-		select {
-		case conn := <-connChan:
-			input = NewSocketMessageReader(conn)
-			output = NewSocketMessageWriter(conn)
-		case err := <-errChan:
-			return err
-		}
+	input, output, err := ai.startViewer()
+	if err != nil {
+		return err
 	}
 
 	session := NewSession(
@@ -178,6 +144,52 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		return ai.WorkSpace.RemoveSession(ai.SessionName)
 	}
 	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.Chat.RunsOn, session.History)
+}
+
+func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, error) {
+	var input MessageReader = ai.Input
+	var output MessageWriter = &DefaultMessageWriter{ai.Output}
+	if ai.Option.Viewer.Enabled && len(ai.Option.Viewer.Command) > 0 {
+		connChan := make(chan net.Conn)
+		errChan := make(chan error)
+		socketPath := ai.WorkSpace.SocketPath(ai.SessionName)
+
+		// start server
+		server, err := NewServer(socketPath)
+		if err != nil {
+			return nil, nil, err
+		}
+		server.Listen()
+		go func() {
+			conn, err := server.Accept()
+			if err != nil {
+				errChan <- err
+			}
+			connChan <- conn
+		}()
+
+		// start client as viewer
+		client, err := NewClient(socketPath, ai.Option.Viewer.Command)
+		if err != nil {
+			return nil, nil, err
+		}
+		go func() {
+			if err := client.Run(); err != nil {
+				errChan <- err
+			}
+		}()
+
+		// get conn
+		select {
+		case conn := <-connChan:
+			input = NewSocketMessageReader(conn)
+			output = NewSocketMessageWriter(conn)
+		case err := <-errChan:
+			return nil, nil, err
+		}
+	}
+
+	return input, output, nil
 }
 
 func (ai *AIForAll) sessionNameFromTime(startedAt time.Time) string {

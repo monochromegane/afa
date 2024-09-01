@@ -15,12 +15,12 @@ type MessageReader interface {
 }
 
 type MessageWriter interface {
-	io.Writer
+	io.WriteCloser
 	Prompt() error
 }
 
 type DefaultMessageWriter struct {
-	io.Writer
+	io.WriteCloser
 }
 
 func (w *DefaultMessageWriter) Prompt() error {
@@ -54,6 +54,8 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 }
 
 func (s *Session) Start(message, messageStdin string, files []string, ctx context.Context, r MessageReader, w MessageWriter) error {
+	defer w.Close()
+
 	if s.History.IsNewSession() {
 		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {

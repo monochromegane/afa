@@ -149,6 +149,9 @@ func GetNewCommand() (Command, error) {
 	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
+	if err := setBasicViewerFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
 
 	flagSet.StringVar(
 		&aiForAll.Option.Chat.SystemPromptTemplate,
@@ -185,6 +188,9 @@ func GetSourceCommand() (Command, error) {
 	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
+	if err := setBasicViewerFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
 
 	flagSet.StringVar(
 		&aiForAll.SessionName,
@@ -213,6 +219,9 @@ func GetResumeCommand() (Command, error) {
 	}
 
 	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
+	if err := setBasicViewerFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
 	flagSet.BoolVar(
@@ -261,6 +270,9 @@ func GetShowCommand() (Command, error) {
 		return nil, err
 	}
 
+	if err := setBasicViewerFlags(aiForAll, flagSet); err != nil {
+		return nil, err
+	}
 	flagSet.StringVar(
 		&aiForAll.SessionName,
 		"l",
@@ -305,15 +317,6 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		aiForAll.Option.Chat.RunsOn,
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
 	)
-	flagSet.BoolVar(
-		&aiForAll.Option.Chat.Viewer,
-		"V",
-		aiForAll.Option.Chat.Viewer,
-		fmt.Sprintf(
-			"Use the viewer program. (\"%s $SOCK_ADDR\")",
-			strings.Join(aiForAll.Option.Chat.ViewerCommand, " "),
-		),
-	)
 
 	if hasStdin() {
 		inputStdin, err := io.ReadAll(os.Stdin)
@@ -324,6 +327,19 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		aiForAll.Option.Chat.Interactive = false
 	}
 
+	return nil
+}
+
+func setBasicViewerFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
+	flagSet.BoolVar(
+		&aiForAll.Option.Viewer.Enabled,
+		"V",
+		aiForAll.Option.Viewer.Enabled,
+		fmt.Sprintf(
+			"Use the viewer program. (\"%s $SOCK_ADDR\")",
+			strings.Join(aiForAll.Option.Viewer.Command, " "),
+		),
+	)
 	return nil
 }
 
