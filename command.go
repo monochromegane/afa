@@ -111,6 +111,21 @@ func (c *ListCommand) Run() error {
 	return c.aiForAll.List()
 }
 
+type ShowCommand struct {
+	flagSet  *flag.FlagSet
+	aiForAll *AIForAll
+}
+
+func (c ShowCommand) Name() string { return "show" }
+
+func (c *ShowCommand) Parse(args []string) error {
+	return c.flagSet.Parse(args)
+}
+
+func (c *ShowCommand) Run() error {
+	return c.aiForAll.Show()
+}
+
 func GetInitCommand() (Command, error) {
 	flagSet := flag.NewFlagSet("init", flag.ExitOnError)
 	aiForAll, err := newAIForAll()
@@ -234,6 +249,26 @@ func GetListCommand() (Command, error) {
 	)
 
 	return &ListCommand{
+		flagSet:  flagSet,
+		aiForAll: aiForAll,
+	}, nil
+}
+
+func GetShowCommand() (Command, error) {
+	flagSet := flag.NewFlagSet("show", flag.ExitOnError)
+	aiForAll, err := newAIForAll()
+	if err != nil {
+		return nil, err
+	}
+
+	flagSet.StringVar(
+		&aiForAll.SessionName,
+		"l",
+		aiForAll.SessionName,
+		"Log name of session.",
+	)
+
+	return &ShowCommand{
 		flagSet:  flagSet,
 		aiForAll: aiForAll,
 	}, nil

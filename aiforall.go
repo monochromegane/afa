@@ -95,6 +95,19 @@ func (ai *AIForAll) List() error {
 	return nil
 }
 
+func (ai *AIForAll) Show() error {
+	sessionPath := ai.WorkSpace.SessionPath(ai.SessionName)
+	if _, err := os.Stat(sessionPath); os.IsNotExist(err) {
+		return fmt.Errorf("%s: no such session log", sessionPath)
+	}
+	history, err := ai.WorkSpace.LoadHistory(sessionPath)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(ai.Output, "%s", history.View())
+	return nil
+}
+
 func (ai *AIForAll) startSession(sessionPath string) error {
 	history, err := ai.WorkSpace.LoadHistory(sessionPath)
 	if err != nil {

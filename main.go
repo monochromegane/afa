@@ -28,6 +28,10 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Error: Failed to get list command. %v", err))
 	}
+	showCommand, err := GetShowCommand()
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error: Failed to get show command. %v", err))
+	}
 
 	cmds := []Command{
 		initCommand,
@@ -35,6 +39,7 @@ func main() {
 		sourceCommand,
 		resumeCommand,
 		listCommand,
+		showCommand,
 	}
 
 	names := []string{}
