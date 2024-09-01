@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -89,7 +90,7 @@ func (ai *AIForAll) List() error {
 		return err
 	}
 	for i, name := range names {
-		fmt.Fprintf(ai.Output, "%s\t%s\n", name, strings.Split(histories[i].FirstPrompt(), "\n")[0])
+		fmt.Fprintf(ai.Output, "%s\t%s\n", name, strings.Split(histories[i].FirstUserPrompt(), "\n")[0])
 	}
 	return nil
 }
@@ -103,6 +104,49 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	if err != nil {
 		return err
 	}
+
+	var input MessageReader = ai.Input
+	var output MessageWriter = &DefaultMessageWriter{ai.Output}
+	if ai.Option.Chat.Viewer && len(ai.Option.Chat.ViewerCommand) > 0 {
+		connChan := make(chan net.Conn)
+		errChan := make(chan error)
+		socketPath := ai.WorkSpace.SocketPath(ai.SessionName)
+
+		// start server
+		server, err := NewServer(socketPath)
+		if err != nil {
+			return err
+		}
+		server.Listen()
+		go func() {
+			conn, err := server.Accept()
+			if err != nil {
+				errChan <- err
+			}
+			connChan <- conn
+		}()
+
+		// start client as viewer
+		client, err := NewClient(socketPath, ai.Option.Chat.ViewerCommand)
+		if err != nil {
+			return err
+		}
+		go func() {
+			if err := client.Run(); err != nil {
+				errChan <- err
+			}
+		}()
+
+		// get conn
+		select {
+		case conn := <-connChan:
+			input = NewSocketMessageReader(conn)
+			output = NewSocketMessageWriter(conn)
+		case err := <-errChan:
+			return err
+		}
+	}
+
 	session := NewSession(
 		secret,
 		history,
@@ -110,13 +154,14 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.WorkSpace.TemplatePath("user", ai.Option.Chat.UserPromptTemplate),
 		ai.Option.Chat.Interactive,
 		ai.Option.Chat.Stream,
+		ai.Option.Chat.WithHistory,
 	)
-	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), ai.Input, ai.Output)
+	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), input, output)
 	if err != nil {
 		return err
 	}
 
-	if session.History.FirstPrompt() == "" {
+	if session.History.FirstUserPrompt() == "" {
 		return ai.WorkSpace.RemoveSession(ai.SessionName)
 	}
 	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.Chat.RunsOn, session.History)

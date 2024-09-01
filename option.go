@@ -6,13 +6,16 @@ type Option struct {
 }
 
 type ChatOption struct {
-	Model                string `json:"model"`
-	SystemPromptTemplate string `json:"system_prompt_template"`
-	UserPromptTemplate   string `json:"user_prompt_template"`
-	Schema               string `json:"schema"`
-	RunsOn               string `json:"runs_on"`
-	Interactive          bool   `json:"interactive"`
-	Stream               bool   `json:"stream"`
+	Model                string   `json:"model"`
+	SystemPromptTemplate string   `json:"system_prompt_template"`
+	UserPromptTemplate   string   `json:"user_prompt_template"`
+	Schema               string   `json:"schema"`
+	RunsOn               string   `json:"runs_on"`
+	Interactive          bool     `json:"interactive"`
+	Stream               bool     `json:"stream"`
+	WithHistory          bool     `json:"with_history"`
+	Viewer               bool     `json:"viewer"`
+	ViewerCommand        []string `json:"viewer_command"`
 }
 
 type ListOption struct {
@@ -30,6 +33,9 @@ func NewOption() *Option {
 			RunsOn:               "",
 			Interactive:          false,
 			Stream:               false,
+			WithHistory:          false,
+			Viewer:               false,
+			ViewerCommand:        []string{"afa-tui", "-a"},
 		},
 		List: &ListOption{
 			Count:         10,

@@ -49,6 +49,7 @@ func (w *WorkSpace) setupDirs() error {
 		w.CacheDir,
 		w.SessionsDir(),
 		w.SidDir(),
+		w.SocketDir(),
 	} {
 		if err := w.mkDirAllIfNotExist(dir); err != nil {
 			return err
@@ -121,6 +122,14 @@ func (w *WorkSpace) SidDir() string {
 
 func (w *WorkSpace) SidPath(name string) string {
 	return path.Join(w.SidDir(), filepath.Clean(fmt.Sprintf("%s.sid", name)))
+}
+
+func (w *WorkSpace) SocketDir() string {
+	return path.Join(w.CacheDir, "sockets")
+}
+
+func (w *WorkSpace) SocketPath(name string) string {
+	return path.Join(w.SocketDir(), filepath.Clean(fmt.Sprintf("%s.sock", name)))
 }
 
 func (w *WorkSpace) OptionPath() string {

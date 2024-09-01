@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"strings"
 )
 
 type Command interface {
@@ -176,6 +177,12 @@ func GetSourceCommand() (Command, error) {
 		aiForAll.SessionName,
 		"Log name of session.",
 	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.WithHistory,
+		"H",
+		aiForAll.Option.Chat.WithHistory,
+		"Display past conversations when resuming a session.",
+	)
 
 	return &SourceCommand{
 		flagSet:  flagSet,
@@ -193,6 +200,12 @@ func GetResumeCommand() (Command, error) {
 	if err := setBasicChatFlags(aiForAll, flagSet); err != nil {
 		return nil, err
 	}
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.WithHistory,
+		"H",
+		aiForAll.Option.Chat.WithHistory,
+		"Display past conversations when resuming a session.",
+	)
 
 	return &ResumeCommand{
 		flagSet:  flagSet,
@@ -256,6 +269,15 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		"R",
 		aiForAll.Option.Chat.RunsOn,
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.Viewer,
+		"V",
+		aiForAll.Option.Chat.Viewer,
+		fmt.Sprintf(
+			"Use the viewer program. (\"%s $SOCK_ADDR\")",
+			strings.Join(aiForAll.Option.Chat.ViewerCommand, " "),
+		),
 	)
 
 	if hasStdin() {

@@ -10,6 +10,24 @@ import (
 	"github.com/monochromegane/afa/internal/payload"
 )
 
+type MessageReader interface {
+	io.Reader
+}
+
+type MessageWriter interface {
+	io.Writer
+	Prompt() error
+}
+
+type DefaultMessageWriter struct {
+	io.Writer
+}
+
+func (w *DefaultMessageWriter) Prompt() error {
+	fmt.Fprint(w, "> ")
+	return nil
+}
+
 type Session struct {
 	Secret                   *Secret
 	History                  *History
@@ -17,10 +35,11 @@ type Session struct {
 	UserPromptTemplatePath   string
 	Interactive              bool
 	Stream                   bool
+	WithHistory              bool
 	Client                   llm.LLMClient
 }
 
-func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream bool) *Session {
+func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory bool) *Session {
 	client := llm.GetLLMClient(history.Model)
 	return &Session{
 		Secret:                   secret,
@@ -29,17 +48,20 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 		UserPromptTemplatePath:   userPromptTemplatePath,
 		Interactive:              interactive,
 		Stream:                   stream,
+		WithHistory:              withHistory,
 		Client:                   client,
 	}
 }
 
-func (s *Session) Start(message, messageStdin string, files []string, ctx context.Context, r io.Reader, w io.Writer) error {
+func (s *Session) Start(message, messageStdin string, files []string, ctx context.Context, r MessageReader, w MessageWriter) error {
 	if s.History.IsNewSession() {
 		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {
 			return err
 		}
 		s.History.AddMessage("system", systemPrompt)
+	} else if s.WithHistory {
+		fmt.Fprint(w, s.History.View())
 	}
 
 	runWithInput := false
@@ -59,16 +81,13 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 	if runWithInput && !s.Interactive {
 		return nil
 	}
-	if runWithInput {
-		fmt.Fprintln(w)
-	}
 
-	fmt.Fprint(w, "> ")
+	w.Prompt()
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		userPrompt := scanner.Text()
 		if userPrompt == "" {
-			fmt.Fprint(w, "> ")
+			w.Prompt()
 			continue
 		}
 		if userPrompt == "exit" {
@@ -83,7 +102,7 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		if !s.Interactive {
 			break
 		}
-		fmt.Fprint(w, "\n> ")
+		w.Prompt()
 	}
 
 	return nil
