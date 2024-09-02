@@ -41,6 +41,7 @@ func (s *Server) Accept() (net.Conn, error) {
 
 type Client struct {
 	Commands []string
+	cmd      *exec.Cmd
 }
 
 func NewClient(path string, commands []string) (*Client, error) {
@@ -57,11 +58,18 @@ func NewClient(path string, commands []string) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) Run() error {
-	cmd := exec.Command(c.Commands[0], c.Commands[1:]...)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	return cmd.Run()
+func (c *Client) Start() error {
+	c.cmd = exec.Command(c.Commands[0], c.Commands[1:]...)
+	c.cmd.Stdin = os.Stdin
+	c.cmd.Stdout = os.Stdout
+	return c.cmd.Start()
+}
+
+func (c *Client) Wait() error {
+	if c.cmd == nil {
+		return nil
+	}
+	return c.cmd.Wait()
 }
 
 type SocketMessageReader struct {
@@ -118,7 +126,7 @@ func (w *SocketMessageWriter) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func (w *SocketMessageWriter) Close() error {
+func (w *SocketMessageWriter) Disconnect() error {
 	return w.Conn.Close()
 }
 

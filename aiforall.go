@@ -17,7 +17,7 @@ import (
 type AIForAll struct {
 	WorkSpace *WorkSpace
 	Input     io.Reader
-	Output    io.WriteCloser
+	Output    io.Writer
 	Option    *Option
 
 	SessionName  string
@@ -104,11 +104,18 @@ func (ai *AIForAll) Show() error {
 	if err != nil {
 		return err
 	}
-	_, output, err := ai.startViewer()
+	_, output, viewer, err := ai.startViewer()
 	if err != nil {
 		return err
 	}
 	fmt.Fprintf(output, "%s", history.View())
+
+	if err := output.Disconnect(); err != nil {
+		return err
+	}
+	if err := viewer.Wait(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -121,7 +128,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	if err != nil {
 		return err
 	}
-	input, output, err := ai.startViewer()
+	input, output, viewer, err := ai.startViewer()
 	if err != nil {
 		return err
 	}
@@ -139,6 +146,12 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	if err != nil {
 		return err
 	}
+	if err := output.Disconnect(); err != nil {
+		return err
+	}
+	if err := viewer.Wait(); err != nil {
+		return err
+	}
 
 	if session.History.FirstUserPrompt() == "" {
 		return ai.WorkSpace.RemoveSession(ai.SessionName)
@@ -146,7 +159,8 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	return ai.WorkSpace.SaveSession(ai.SessionName, ai.Option.Chat.RunsOn, session.History)
 }
 
-func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, error) {
+func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, *Client, error) {
+	viewer := &Client{}
 	var input MessageReader = ai.Input
 	var output MessageWriter = &DefaultMessageWriter{ai.Output}
 	if ai.Option.Viewer.Enabled && len(ai.Option.Viewer.Command) > 0 {
@@ -157,7 +171,7 @@ func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, error) {
 		// start server
 		server, err := NewServer(socketPath)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, viewer, err
 		}
 		server.Listen()
 		go func() {
@@ -171,13 +185,12 @@ func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, error) {
 		// start client as viewer
 		client, err := NewClient(socketPath, ai.Option.Viewer.Command)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, viewer, err
 		}
-		go func() {
-			if err := client.Run(); err != nil {
-				errChan <- err
-			}
-		}()
+		if err := client.Start(); err != nil {
+			errChan <- err
+		}
+		viewer = client
 
 		// get conn
 		select {
@@ -185,11 +198,11 @@ func (ai *AIForAll) startViewer() (MessageReader, MessageWriter, error) {
 			input = NewSocketMessageReader(conn)
 			output = NewSocketMessageWriter(conn)
 		case err := <-errChan:
-			return nil, nil, err
+			return nil, nil, viewer, err
 		}
 	}
 
-	return input, output, nil
+	return input, output, viewer, nil
 }
 
 func (ai *AIForAll) sessionNameFromTime(startedAt time.Time) string {
