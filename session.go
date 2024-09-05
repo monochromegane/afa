@@ -60,7 +60,7 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 
 func (s *Session) Start(message, messageStdin string, files []string, ctx context.Context, r MessageReader, w MessageWriter) error {
 	if s.History.IsNewSession() {
-		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin, files)
+		systemPrompt, err := NewPrompt(s.SystemPromptTemplatePath, "", message, messageStdin, []string{})
 		if err != nil {
 			return err
 		}
