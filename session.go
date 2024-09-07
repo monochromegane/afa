@@ -41,10 +41,11 @@ type Session struct {
 	Interactive              bool
 	Stream                   bool
 	WithHistory              bool
+	DryRun                   bool
 	Client                   llm.LLMClient
 }
 
-func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory bool) *Session {
+func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory, dryRun bool) *Session {
 	client := llm.GetLLMClient(history.Model)
 	return &Session{
 		Secret:                   secret,
@@ -54,6 +55,7 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 		Interactive:              interactive,
 		Stream:                   stream,
 		WithHistory:              withHistory,
+		DryRun:                   dryRun,
 		Client:                   client,
 	}
 }
@@ -66,7 +68,7 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		}
 		s.History.AddMessage("system", systemPrompt)
 	} else if s.WithHistory {
-		fmt.Fprint(w, s.History.View())
+		fmt.Fprint(w, s.History.View(false))
 	}
 
 	runWithInput := false
@@ -74,6 +76,13 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		userPrompt, err := NewPrompt(s.UserPromptTemplatePath, "", message, messageStdin, files)
 		if err != nil {
 			return err
+		}
+		if s.DryRun {
+			s.History.AddMessage("user", userPrompt)
+			fmt.Fprint(w, s.History.View(true))
+			// To prevent saving logs in dry-run mode, the last message is removed.
+			s.History.RemoveLastMessage()
+			return nil
 		}
 
 		err = s.chatCompletionAndPrint(ctx, userPrompt, w)
@@ -83,7 +92,7 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 		runWithInput = true
 	}
 
-	if runWithInput && !s.Interactive {
+	if runWithInput || s.DryRun {
 		return nil
 	}
 

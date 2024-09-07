@@ -171,6 +171,12 @@ func GetNewCommand() (Command, error) {
 		aiForAll.Option.Chat.Schema,
 		"Name of JSON schema for response format.",
 	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.DryRun,
+		"dry-run",
+		aiForAll.Option.Chat.DryRun,
+		"Run in dry-run mode. Outputs only the parsed prompt.",
+	)
 
 	return &NewCommand{
 		flagSet:  flagSet,
@@ -303,7 +309,7 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		&aiForAll.Option.Chat.Interactive,
 		"I",
 		aiForAll.Option.Chat.Interactive,
-		"Runs in interactive mode; set to false when standard input is passed.",
+		"Runs in interactive mode; set to false when standard input is passed or when in dry-run mode.",
 	)
 	flagSet.BoolVar(
 		&aiForAll.Option.Chat.Stream,

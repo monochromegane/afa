@@ -15,6 +15,7 @@ type ChatOption struct {
 	Interactive          bool   `json:"interactive"`
 	Stream               bool   `json:"stream"`
 	WithHistory          bool   `json:"with_history"`
+	DryRun               bool   `json:"dry_run"`
 }
 
 type ListOption struct {

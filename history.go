@@ -38,6 +38,10 @@ func (h *History) AddMessage(role, content string) {
 	h.Messages = append(h.Messages, &payload.Message{Role: role, Content: content})
 }
 
+func (h *History) RemoveLastMessage() {
+	h.Messages = h.Messages[:len(h.Messages)-1]
+}
+
 func (h *History) FirstUserPrompt() string {
 	for _, message := range h.Messages {
 		if message.Role == "user" {
@@ -47,10 +51,14 @@ func (h *History) FirstUserPrompt() string {
 	return ""
 }
 
-func (h *History) View() string {
+func (h *History) View(detail bool) string {
 	var buf bytes.Buffer
 	for _, message := range h.Messages {
 		switch message.Role {
+		case "system":
+			if detail {
+				buf.WriteString(fmt.Sprintf("# System\n\n%s\n\n", message.Content))
+			}
 		case "assistant":
 			buf.WriteString(fmt.Sprintf("# Assistant\n\n%s\n\n", message.Content))
 		case "user":

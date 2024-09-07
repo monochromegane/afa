@@ -108,7 +108,7 @@ func (ai *AIForAll) Show() error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(output, "%s", history.View())
+	fmt.Fprintf(output, "%s", history.View(false))
 
 	if err := output.Disconnect(); err != nil {
 		return err
@@ -141,6 +141,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.Option.Chat.Interactive,
 		ai.Option.Chat.Stream,
 		ai.Option.Chat.WithHistory,
+		ai.Option.Chat.DryRun,
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), input, output)
 	if err != nil {
