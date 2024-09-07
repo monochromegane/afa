@@ -68,7 +68,7 @@ func (w *WorkSpace) setupFiles(option *Option, secret *Secret) error {
 
 	if err := w.writeFileIfNotExist(
 		w.TemplatePath("user", "default"),
-		[]byte{"{{ .Message }}\\n{{ if .MessageStdin }}\\n```\\n{{ .MessageStdin }}```\\n{{- end }}\\n{{ range .Files }}\\n- File: {{ .Name }}\\n```\\n{{ .Content }}```\\n{{ end -}}"},
+		[]byte("{{ .Message }}\n{{ if .MessageStdin }}\n```\n{{ .MessageStdin }}```\n{{- end }}\n{{ range .Files }}\n- File: {{ .Name }}\\n```\n{{ .Content }}```\n{{ end -}}"),
 	); err != nil {
 		return err
 	}
