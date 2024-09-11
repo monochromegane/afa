@@ -51,14 +51,17 @@ func (c *NewCommand) Parse(args []string) error {
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
 	}
+
 	if c.aiForAll.Option.Chat.DryRun {
 		c.aiForAll.Option.Chat.Interactive = false
 	}
-	if c.aiForAll.Option.Chat.Interactive ||
-		c.aiForAll.Option.Chat.Stream ||
-		c.aiForAll.Option.Viewer.Enabled {
+
+	if c.aiForAll.Option.Script.Enabled {
+		c.aiForAll.Option.SetScriptOptions()
+	} else {
 		c.aiForAll.Option.Chat.Quote = false
 	}
+
 	return nil
 }
 
@@ -90,12 +93,13 @@ func (c *SourceCommand) Parse(args []string) error {
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
 	}
-	if c.aiForAll.Option.Chat.Interactive ||
-		c.aiForAll.Option.Chat.Stream ||
-		c.aiForAll.Option.Chat.WithHistory ||
-		c.aiForAll.Option.Viewer.Enabled {
+
+	if c.aiForAll.Option.Script.Enabled {
+		c.aiForAll.Option.SetScriptOptions()
+	} else {
 		c.aiForAll.Option.Chat.Quote = false
 	}
+
 	return nil
 }
 
@@ -127,12 +131,13 @@ func (c *ResumeCommand) Parse(args []string) error {
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
 	}
-	if c.aiForAll.Option.Chat.Interactive ||
-		c.aiForAll.Option.Chat.Stream ||
-		c.aiForAll.Option.Chat.WithHistory ||
-		c.aiForAll.Option.Viewer.Enabled {
+
+	if c.aiForAll.Option.Script.Enabled {
+		c.aiForAll.Option.SetScriptOptions()
+	} else {
 		c.aiForAll.Option.Chat.Quote = false
 	}
+
 	return nil
 }
 
@@ -352,6 +357,12 @@ func GetShowCommand() (Command, error) {
 }
 
 func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
+	flagSet.BoolVar(
+		&aiForAll.Option.Script.Enabled,
+		"script",
+		aiForAll.Option.Script.Enabled,
+		"Sets a predefined set of options for script execution simultaneously, setting I, H, S, and V to false.",
+	)
 	flagSet.StringVar(
 		&aiForAll.Message,
 		"p",

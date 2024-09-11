@@ -1,9 +1,14 @@
 package main
 
 type Option struct {
+	Script *ScriptOption `json:"script"`
 	Chat   *ChatOption   `json:"chat"`
 	Viewer *ViewerOption `json:"viewer"`
 	List   *ListOption   `json:"list"`
+}
+
+type ScriptOption struct {
+	Enabled bool `json:"enabled"`
 }
 
 type ChatOption struct {
@@ -32,6 +37,9 @@ type ViewerOption struct {
 
 func NewOption() *Option {
 	return &Option{
+		Script: &ScriptOption{
+			Enabled: false,
+		},
 		Chat: &ChatOption{
 			Model:                "gpt-4o-mini",
 			SystemPromptTemplate: "default",
@@ -54,4 +62,11 @@ func NewOption() *Option {
 			OrderByModify: false,
 		},
 	}
+}
+
+func (o *Option) SetScriptOptions() {
+	o.Chat.Interactive = false
+	o.Chat.WithHistory = false
+	o.Chat.Stream = false
+	o.Viewer.Enabled = false
 }
