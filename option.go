@@ -78,5 +78,6 @@ func (o *Option) SetScriptOptions() {
 	o.Chat.Interactive = false
 	o.Chat.WithHistory = false
 	o.Chat.Stream = false
+	o.Chat.Save = false
 	o.Viewer.Enabled = false
 }
