@@ -42,10 +42,11 @@ type Session struct {
 	Stream                   bool
 	WithHistory              bool
 	DryRun                   bool
+	MockRun                  bool
 	Client                   llm.LLMClient
 }
 
-func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory, dryRun bool) *Session {
+func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory, dryRun, mockRun bool) *Session {
 	client := llm.GetLLMClient(history.Model)
 	return &Session{
 		Secret:                   secret,
@@ -56,6 +57,7 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 		Stream:                   stream,
 		WithHistory:              withHistory,
 		DryRun:                   dryRun,
+		MockRun:                  mockRun,
 		Client:                   client,
 	}
 }
@@ -123,6 +125,11 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 }
 
 func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string, w io.Writer) error {
+	if s.MockRun {
+		fmt.Fprintln(w, s.History.LastAssistantMessage())
+		return nil
+	}
+
 	ctx = context.WithValue(ctx, "openai-api-key", s.Secret.OpenAI.ApiKey)
 
 	s.History.AddMessage("user", userPrompt)

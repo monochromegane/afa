@@ -16,6 +16,7 @@ type ChatOption struct {
 	Stream               bool   `json:"stream"`
 	WithHistory          bool   `json:"with_history"`
 	DryRun               bool   `json:"dry_run"`
+	MockRun              bool   `json:"mock_run"`
 }
 
 type ListOption struct {
@@ -39,6 +40,8 @@ func NewOption() *Option {
 			Interactive:          false,
 			Stream:               false,
 			WithHistory:          false,
+			DryRun:               false,
+			MockRun:              false,
 		},
 		Viewer: &ViewerOption{
 			Enabled: false,

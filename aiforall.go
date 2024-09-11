@@ -142,6 +142,7 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 		ai.Option.Chat.Stream,
 		ai.Option.Chat.WithHistory,
 		ai.Option.Chat.DryRun,
+		ai.Option.Chat.MockRun,
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), input, output)
 	if err != nil {

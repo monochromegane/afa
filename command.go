@@ -210,6 +210,12 @@ func GetSourceCommand() (Command, error) {
 		aiForAll.Option.Chat.WithHistory,
 		"Display past conversations when resuming a session.",
 	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.MockRun,
+		"mock-run",
+		aiForAll.Option.Chat.MockRun,
+		"Run in mock-run mode. Outputs will be fixed to the last response.",
+	)
 
 	return &SourceCommand{
 		flagSet:  flagSet,
@@ -235,6 +241,12 @@ func GetResumeCommand() (Command, error) {
 		"H",
 		aiForAll.Option.Chat.WithHistory,
 		"Display past conversations when resuming a session.",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.MockRun,
+		"mock-run",
+		aiForAll.Option.Chat.MockRun,
+		"Run in mock-run mode. Outputs will be fixed to the last response.",
 	)
 
 	return &ResumeCommand{

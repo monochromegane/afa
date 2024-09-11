@@ -51,6 +51,16 @@ func (h *History) FirstUserPrompt() string {
 	return ""
 }
 
+func (h *History) LastAssistantMessage() string {
+	for i := len(h.Messages) - 1; i >= 0; i-- {
+		if h.Messages[i].Role == "assistant" {
+			return h.Messages[i].Content
+		}
+
+	}
+	return ""
+}
+
 func (h *History) View(detail bool) string {
 	var buf bytes.Buffer
 	for _, message := range h.Messages {
