@@ -54,6 +54,12 @@ func (c *NewCommand) Parse(args []string) error {
 	if c.aiForAll.Option.Chat.DryRun {
 		c.aiForAll.Option.Chat.Interactive = false
 	}
+	if c.aiForAll.Option.Chat.Interactive ||
+		c.aiForAll.Option.Chat.Stream ||
+		c.aiForAll.Option.Chat.WithHistory ||
+		c.aiForAll.Option.Viewer.Enabled {
+		c.aiForAll.Option.Chat.Quote = false
+	}
 	return nil
 }
 
@@ -85,6 +91,12 @@ func (c *SourceCommand) Parse(args []string) error {
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
 	}
+	if c.aiForAll.Option.Chat.Interactive ||
+		c.aiForAll.Option.Chat.Stream ||
+		c.aiForAll.Option.Chat.WithHistory ||
+		c.aiForAll.Option.Viewer.Enabled {
+		c.aiForAll.Option.Chat.Quote = false
+	}
 	return nil
 }
 
@@ -115,6 +127,12 @@ func (c *ResumeCommand) Parse(args []string) error {
 		}
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
+	}
+	if c.aiForAll.Option.Chat.Interactive ||
+		c.aiForAll.Option.Chat.Stream ||
+		c.aiForAll.Option.Chat.WithHistory ||
+		c.aiForAll.Option.Viewer.Enabled {
+		c.aiForAll.Option.Chat.Quote = false
 	}
 	return nil
 }
@@ -364,6 +382,12 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		"R",
 		aiForAll.Option.Chat.RunsOn,
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.Quote,
+		"Q",
+		aiForAll.Option.Chat.Quote,
+		"Wraps the output in double quotes, safely escaped for valid string literals.",
 	)
 
 	return nil

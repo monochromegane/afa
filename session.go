@@ -43,11 +43,16 @@ type Session struct {
 	WithHistory              bool
 	DryRun                   bool
 	MockRun                  bool
+	Verb                     string
 	Client                   llm.LLMClient
 }
 
-func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory, dryRun, mockRun bool) *Session {
+func NewSession(secret *Secret, history *History, systemPromptTemplatePath, userPromptTemplatePath string, interactive, stream, withHistory, dryRun, mockRun, quote bool) *Session {
 	client := llm.GetLLMClient(history.Model)
+	verb := "%s"
+	if quote {
+		verb = "%q"
+	}
 	return &Session{
 		Secret:                   secret,
 		History:                  history,
@@ -58,6 +63,7 @@ func NewSession(secret *Secret, history *History, systemPromptTemplatePath, user
 		WithHistory:              withHistory,
 		DryRun:                   dryRun,
 		MockRun:                  mockRun,
+		Verb:                     verb,
 		Client:                   client,
 	}
 }
@@ -126,7 +132,8 @@ func (s *Session) Start(message, messageStdin string, files []string, ctx contex
 
 func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string, w io.Writer) error {
 	if s.MockRun {
-		fmt.Fprintln(w, s.History.LastAssistantMessage())
+		fmt.Fprintf(w, s.Verb, s.History.LastAssistantMessage())
+		fmt.Fprintln(w)
 		return nil
 	}
 
@@ -143,7 +150,7 @@ func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string,
 			}
 			chunk := response.Message.Content
 			message += chunk
-			fmt.Fprint(w, chunk)
+			fmt.Fprintf(w, s.Verb, chunk)
 			return nil
 		})
 		if err != nil {
@@ -157,7 +164,8 @@ func (s *Session) chatCompletionAndPrint(ctx context.Context, userPrompt string,
 		}
 		role = response.Message.Role
 		message = response.Message.Content
-		fmt.Fprintln(w, message)
+		fmt.Fprintf(w, s.Verb, message)
+		fmt.Fprintln(w)
 	}
 	s.History.AddMessage(role, message)
 
