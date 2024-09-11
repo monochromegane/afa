@@ -44,10 +44,16 @@ func NewAIForAll(configDir, cacheDir string) (*AIForAll, error) {
 }
 
 func (ai *AIForAll) Init() error {
-	fmt.Print("Enter your OpenAI API key: ")
-	apiKey, err := term.ReadPassword(int(syscall.Stdin))
-	if err != nil {
-		return fmt.Errorf("Failed to read OpenAI API key: %v", err)
+	var err error
+	var apiKey []byte
+	if ai.Option.Init.NoInteraction {
+		apiKey = []byte("")
+	} else {
+		fmt.Print("Enter your OpenAI API key: ")
+		apiKey, err = term.ReadPassword(int(syscall.Stdin))
+		if err != nil {
+			return fmt.Errorf("Failed to read OpenAI API key: %v", err)
+		}
 	}
 	return ai.WorkSpace.Setup(NewOption(), NewSecret(string(apiKey)))
 }

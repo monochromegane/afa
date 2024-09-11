@@ -184,6 +184,12 @@ func GetInitCommand() (Command, error) {
 	if err != nil {
 		return nil, err
 	}
+	flagSet.BoolVar(
+		&aiForAll.Option.Init.NoInteraction,
+		"n",
+		aiForAll.Option.Init.NoInteraction,
+		"Do not ask interactive question.",
+	)
 
 	return &InitCommand{
 		flagSet:  flagSet,

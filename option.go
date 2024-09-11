@@ -2,6 +2,7 @@ package main
 
 type Option struct {
 	Script *ScriptOption `json:"script"`
+	Init   *InitOption   `json:"init"`
 	Chat   *ChatOption   `json:"chat"`
 	Viewer *ViewerOption `json:"viewer"`
 	List   *ListOption   `json:"list"`
@@ -9,6 +10,10 @@ type Option struct {
 
 type ScriptOption struct {
 	Enabled bool `json:"enabled"`
+}
+
+type InitOption struct {
+	NoInteraction bool `json:"no_interaction"`
 }
 
 type ChatOption struct {
@@ -37,6 +42,9 @@ type ViewerOption struct {
 
 func NewOption() *Option {
 	return &Option{
+		Init: &InitOption{
+			NoInteraction: false,
+		},
 		Script: &ScriptOption{
 			Enabled: false,
 		},
