@@ -56,7 +56,6 @@ func (c *NewCommand) Parse(args []string) error {
 	}
 	if c.aiForAll.Option.Chat.Interactive ||
 		c.aiForAll.Option.Chat.Stream ||
-		c.aiForAll.Option.Chat.WithHistory ||
 		c.aiForAll.Option.Viewer.Enabled {
 		c.aiForAll.Option.Chat.Quote = false
 	}
