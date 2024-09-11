@@ -28,6 +28,7 @@ type ChatOption struct {
 	DryRun               bool   `json:"dry_run"`
 	MockRun              bool   `json:"mock_run"`
 	Quote                bool   `json:"quote"`
+	Save                 bool   `json:"save"`
 }
 
 type ListOption struct {
@@ -60,6 +61,7 @@ func NewOption() *Option {
 			DryRun:               false,
 			MockRun:              false,
 			Quote:                false,
+			Save:                 true,
 		},
 		Viewer: &ViewerOption{
 			Enabled: false,

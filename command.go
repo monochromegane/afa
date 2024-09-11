@@ -94,6 +94,8 @@ func (c *SourceCommand) Parse(args []string) error {
 		c.aiForAll.Option.Chat.Interactive = false
 	}
 
+	c.aiForAll.Option.Chat.Save = true
+
 	if c.aiForAll.Option.Script.Enabled {
 		c.aiForAll.Option.SetScriptOptions()
 	} else {
@@ -131,6 +133,8 @@ func (c *ResumeCommand) Parse(args []string) error {
 		c.aiForAll.MessageStdin = string(inputStdin)
 		c.aiForAll.Option.Chat.Interactive = false
 	}
+
+	c.aiForAll.Option.Chat.Save = true
 
 	if c.aiForAll.Option.Script.Enabled {
 		c.aiForAll.Option.SetScriptOptions()
@@ -234,6 +238,12 @@ func GetNewCommand() (Command, error) {
 		"dry-run",
 		aiForAll.Option.Chat.DryRun,
 		"Run in dry-run mode. Outputs only the parsed prompt.",
+	)
+	flagSet.BoolVar(
+		&aiForAll.Option.Chat.Save,
+		"L",
+		aiForAll.Option.Chat.Save,
+		"Save session to the log.",
 	)
 
 	return &NewCommand{
