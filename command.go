@@ -42,6 +42,18 @@ func (c *NewCommand) Parse(args []string) error {
 		return err
 	}
 	c.aiForAll.Files = c.flagSet.Args()
+
+	if hasStdin() {
+		inputStdin, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		c.aiForAll.MessageStdin = string(inputStdin)
+		c.aiForAll.Option.Chat.Interactive = false
+	}
+	if c.aiForAll.Option.Chat.DryRun {
+		c.aiForAll.Option.Chat.Interactive = false
+	}
 	return nil
 }
 
@@ -64,6 +76,15 @@ func (c *SourceCommand) Parse(args []string) error {
 		return err
 	}
 	c.aiForAll.Files = c.flagSet.Args()
+
+	if hasStdin() {
+		inputStdin, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		c.aiForAll.MessageStdin = string(inputStdin)
+		c.aiForAll.Option.Chat.Interactive = false
+	}
 	return nil
 }
 
@@ -86,6 +107,15 @@ func (c *ResumeCommand) Parse(args []string) error {
 		return err
 	}
 	c.aiForAll.Files = c.flagSet.Args()
+
+	if hasStdin() {
+		inputStdin, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		c.aiForAll.MessageStdin = string(inputStdin)
+		c.aiForAll.Option.Chat.Interactive = false
+	}
 	return nil
 }
 
@@ -335,15 +365,6 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		aiForAll.Option.Chat.RunsOn,
 		"Resume based on the identifier of latest session. (default \"$PPID\")",
 	)
-
-	if hasStdin() {
-		inputStdin, err := io.ReadAll(os.Stdin)
-		if err != nil {
-			return err
-		}
-		aiForAll.MessageStdin = string(inputStdin)
-		aiForAll.Option.Chat.Interactive = false
-	}
 
 	return nil
 }
