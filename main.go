@@ -1,11 +1,15 @@
 package main
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 )
+
+const cmdName = "afa"
 
 func main() {
 	initCommand, err := GetInitCommand()
@@ -40,6 +44,26 @@ func main() {
 		resumeCommand,
 		listCommand,
 		showCommand,
+	}
+
+	flagSet := flag.NewFlagSet(cmdName, flag.ContinueOnError)
+	flagSet.Usage = func() {
+		fmt.Fprintf(flagSet.Output(), "Usage of %s:\n", cmdName)
+		flagSet.PrintDefaults()
+		for _, cmd := range cmds {
+			fmt.Fprintf(flagSet.Output(), "  %s\n\t%s\n", cmd.Name(), cmd.Description())
+		}
+	}
+	ver := flagSet.Bool("version", false, "Display version")
+	if err := flagSet.Parse(os.Args[1:]); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			os.Exit(0)
+		}
+		os.Exit(2)
+	}
+	if *ver {
+		fmt.Fprintf(flagSet.Output(), "%s v%s (rev:%s)\n", cmdName, version, revision)
+		os.Exit(0)
 	}
 
 	names := []string{}

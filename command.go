@@ -11,6 +11,7 @@ import (
 
 type Command interface {
 	Name() string
+	Description() string
 	Parse([]string) error
 	Run() error
 }
@@ -21,6 +22,8 @@ type InitCommand struct {
 }
 
 func (c InitCommand) Name() string { return "init" }
+
+func (c InitCommand) Description() string { return "Initialize configuration and cache directories." }
 
 func (c *InitCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
@@ -36,6 +39,8 @@ type NewCommand struct {
 }
 
 func (c NewCommand) Name() string { return "new" }
+
+func (c NewCommand) Description() string { return "Initiates a new session." }
 
 func (c *NewCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
@@ -79,6 +84,8 @@ type SourceCommand struct {
 
 func (c SourceCommand) Name() string { return "source" }
 
+func (c SourceCommand) Description() string { return "Continue from a specified session." }
+
 func (c *SourceCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
 		return err
@@ -118,6 +125,8 @@ type ResumeCommand struct {
 }
 
 func (c ResumeCommand) Name() string { return "resume" }
+
+func (c ResumeCommand) Description() string { return "Continue from the last session." }
 
 func (c *ResumeCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
@@ -159,6 +168,8 @@ type ListCommand struct {
 
 func (c ListCommand) Name() string { return "list" }
 
+func (c ListCommand) Description() string { return "List sessions." }
+
 func (c *ListCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
 }
@@ -173,6 +184,8 @@ type ShowCommand struct {
 }
 
 func (c ShowCommand) Name() string { return "show" }
+
+func (c ShowCommand) Description() string { return "Show a specified session." }
 
 func (c *ShowCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
@@ -202,7 +215,7 @@ func GetInitCommand() (Command, error) {
 }
 
 func GetNewCommand() (Command, error) {
-	flagSet := flag.NewFlagSet("new", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(fmt.Sprintf("%s new", cmdName), flag.ExitOnError)
 	aiForAll, err := newAIForAll()
 	if err != nil {
 		return nil, err
@@ -253,7 +266,7 @@ func GetNewCommand() (Command, error) {
 }
 
 func GetSourceCommand() (Command, error) {
-	flagSet := flag.NewFlagSet("source", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(fmt.Sprintf("%s source", cmdName), flag.ExitOnError)
 	aiForAll, err := newAIForAll()
 	if err != nil {
 		return nil, err
@@ -292,7 +305,7 @@ func GetSourceCommand() (Command, error) {
 }
 
 func GetResumeCommand() (Command, error) {
-	flagSet := flag.NewFlagSet("resume", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(fmt.Sprintf("%s resume", cmdName), flag.ExitOnError)
 	aiForAll, err := newAIForAll()
 	if err != nil {
 		return nil, err
@@ -324,7 +337,7 @@ func GetResumeCommand() (Command, error) {
 }
 
 func GetListCommand() (Command, error) {
-	flagSet := flag.NewFlagSet("list", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(fmt.Sprintf("%s list", cmdName), flag.ExitOnError)
 	aiForAll, err := newAIForAll()
 	if err != nil {
 		return nil, err
@@ -350,7 +363,7 @@ func GetListCommand() (Command, error) {
 }
 
 func GetShowCommand() (Command, error) {
-	flagSet := flag.NewFlagSet("show", flag.ExitOnError)
+	flagSet := flag.NewFlagSet(fmt.Sprintf("%s show", cmdName), flag.ExitOnError)
 	aiForAll, err := newAIForAll()
 	if err != nil {
 		return nil, err
