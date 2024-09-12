@@ -13,7 +13,6 @@ With AFA, let's collaborate with both existing and unknown commands in line with
 - Prompt programs to work together.
 - Prompt programs to handle text streams, because that is a universal interface.
 
-
 ## Demo
 
 ### Error Message Explanations
@@ -27,6 +26,15 @@ With AFA, let's collaborate with both existing and unknown commands in line with
 ### GitHub Pull Request Content Suggestions
 
 ### Interactive Chat with Rich TUI
+
+## Features
+
+- Acts as a terminal-friendly AI command.
+- Functions as a chat client with a rich TUI.
+- Supports contextual system and user prompts using templates.
+- Accepts prompts, standard input, and file paths as context.
+- Manages sessions, allowing quick resumption through the `resume` sub-command.
+- Supports structured output with a safely escaped JSON option, facilitating easy integration with other commands.
 
 ## Usage
 
