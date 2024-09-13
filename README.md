@@ -30,11 +30,13 @@ With AFA, let's collaborate with both existing and unknown commands in line with
 ## Features
 
 - Acts as a terminal-friendly AI command.
-- Functions as a chat client with a rich TUI.
-- Supports contextual system and user prompts using templates.
+- Acts as a chat client with a rich terminal user interface (TUI).
+- Supports contextual prompts for both system and user using templates.
 - Accepts prompts, standard input, and file paths as context.
-- Manages sessions, allowing quick resumption through the `resume` sub-command.
+- Manages sessions, allowing for quick resumption via the `resume` sub-command.
 - Supports structured output with a safely escaped JSON option, facilitating easy integration with other commands.
+- The core application operates independently of third-party libraries.
+- Supports `OpenAI` as an AI model (support for other AI models is planned for the future).
 
 ## Usage
 
