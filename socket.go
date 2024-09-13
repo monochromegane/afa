@@ -136,3 +136,10 @@ func (w *SocketMessageWriter) Prompt() error {
 	}
 	return nil
 }
+
+func (w *SocketMessageWriter) Error() error {
+	if _, err := w.Write([]byte("__AFA_ERROR__")); err != nil {
+		return err
+	}
+	return nil
+}

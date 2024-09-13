@@ -18,6 +18,7 @@ type MessageWriter interface {
 	io.Writer
 	Disconnect() error
 	Prompt() error
+	Error() error
 }
 
 type DefaultMessageWriter struct {
@@ -30,6 +31,10 @@ func (w *DefaultMessageWriter) Disconnect() error {
 
 func (w *DefaultMessageWriter) Prompt() error {
 	fmt.Fprint(w, "> ")
+	return nil
+}
+
+func (w *DefaultMessageWriter) Error() error {
 	return nil
 }
 

@@ -153,6 +153,12 @@ func (ai *AIForAll) startSession(sessionPath string) error {
 	)
 	err = session.Start(ai.Message, ai.MessageStdin, ai.Files, context.Background(), input, output)
 	if err != nil {
+		if err := output.Error(); err != nil {
+			return err
+		}
+		if err := viewer.Wait(); err != nil {
+			return err
+		}
 		return err
 	}
 	if err := output.Disconnect(); err != nil {
