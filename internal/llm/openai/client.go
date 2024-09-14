@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -78,7 +79,11 @@ func (c *Client) ChatCompletionStream(request *payload.Request, ctx context.Cont
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Error: Status Code %d.\n", resp.StatusCode)
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return fmt.Errorf("Error: Status Code %d.\n", resp.StatusCode)
+		}
+		return fmt.Errorf("Error: Status Code %d, Response Body: %s.\n", resp.StatusCode, string(body))
 	}
 
 	reader := bufio.NewReader(resp.Body)
