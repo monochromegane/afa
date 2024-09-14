@@ -15,17 +15,17 @@ With AFA, let's collaborate with both existing and unknown commands in line with
 
 ## Demo
 
-### Error Message Explanations
+### Chat using a Rich TUI
 
-### Command Suggestions
+![Chat](examples/chat.gif)
 
-### Code Suggestions for Vim
+### Command Suggestions using ZLE
 
-### Git Commit Message Suggestions
+![Command Suggestions](examples/command_suggestion.gif)
 
-### GitHub Pull Request Content Suggestions
+### Code Suggestions using Vim
 
-### Interactive Chat with Rich TUI
+![Code Suggestions](examples/code_suggestion.gif)
 
 ## Features
 
@@ -122,3 +122,39 @@ Initialize the setup:
 ```sh
 afa init
 ```
+
+## Configuration
+
+### Default options
+
+The configuration file named `afa/option.json` should be located at the path specified by Go's [os.UserConfigDir](https://pkg.go.dev/os#UserConfigDir).
+
+> On Unix systems, it returns `$XDG_CONFIG_HOME` as specified by [https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) if non-empty, else `$HOME/.config`. On Darwin, it returns `$HOME/Library/Application Support`. On Windows, it returns `%AppData%`. On Plan 9, it returns `$home/lib`.
+
+### API Keys
+
+The configuration file named `CONFIG_PATH/afa/secrets.json`.
+
+### Tempates
+
+AFA supports the use of template files, which can be placed in the `templates/{system,user}` directories with the `.tmpl` extension.
+You can specify the template to use by providing the name without the extension using `-s` (for system templates) or `-u` (for user templates) options.
+
+Templates allow you to dynamically insert information. You can utilize the following placeholders within your templates:
+
+- `Message`: A string that can be replaced with a specific message by `-p` opition.
+- `MessageStdin`: This placeholder can take input from the standard input as a message.
+- `Files`: A collection of file objects, where each file has `Name` and `Content` members.
+
+### Schemas
+
+Similar to templates, schema files can be placed in the `schemas` directory and should have a `.json` extension.
+You can specify the schema to use by providing the name without the `.json` extension using the `-j` option.
+
+## Cache
+
+### Sessions
+
+The session files named `afa/sessions/SESSION_NAME.json` should be located at the path specified by Go's [os.UserCacheDir](https://pkg.go.dev/os#UserCacheDir).
+
+> On Unix systems, it returns `$XDG_CACHE_HOME` as specified by [https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) if non-empty, else `$HOME/.cache`. On Darwin, it returns `$HOME/Library/Caches`. On Windows, it returns `%LocalAppData%`. On Plan 9, it returns `$home/lib/cache`.
