@@ -7,11 +7,11 @@ AFA is a terminal-friendly AI command. It enables new behaviors through ad-hoc p
 AFA processes text streams as its input and output. Text is a flexible and universal interface, making it easy to interact across various environments and tools.
 Additionally, it integrates with rich TUI tools to provide an interactive chat experience in the terminal.
 
-With AFA, let's collaborate with both existing and unknown commands in line with the UNIX philosophy.
+With AFA, let's collaborate with both existing and unknown commands in line with the [UNIX philosophy](https://en.wikipedia.org/wiki/Unix_philosophy).
 
-- Prompt programs that do one thing and do it well.
-- Prompt programs to work together.
-- Prompt programs to handle text streams, because that is a universal interface.
+- *Prompt* programs that do one thing and do it well.
+- *Prompt* programs to work together.
+- *Prompt* programs to handle text streams, because that is a universal interface.
 
 ## Demo
 
