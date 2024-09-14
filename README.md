@@ -158,3 +158,11 @@ You can specify the schema to use by providing the name without the `.json` exte
 The session files named `afa/sessions/SESSION_NAME.json` should be located at the path specified by Go's [os.UserCacheDir](https://pkg.go.dev/os#UserCacheDir).
 
 > On Unix systems, it returns `$XDG_CACHE_HOME` as specified by [https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) if non-empty, else `$HOME/.cache`. On Darwin, it returns `$HOME/Library/Caches`. On Windows, it returns `%LocalAppData%`. On Plan 9, it returns `$home/lib/cache`.
+
+## License
+
+[MIT](https://github.com/monochromegane/afa/blob/master/LICENSE)
+
+## Author
+
+[monochromegane](https://github.com/monochromegane)
