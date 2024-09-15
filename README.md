@@ -130,7 +130,7 @@ You can download binaries from gihub releases.
 You can also use [Homebrew](https://brew.sh/):
 
 ```console
-brew install afa afa-tui
+brew install monochromegane/tap/afa monochromegane/tap/afa-tui
 ```
 
 ## Configuration
