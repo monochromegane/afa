@@ -40,6 +40,10 @@ cross-build: credits
 	rm -rf $(DIST_DIR)
 	goxz -pv=v$(VERSION) -build-ldflags=$(BUILD_LDFLAGS) -static -d $(DIST_DIR) .
 
+.PHONY: upload
+upload:
+	ghr v$(VERSION) $(DIST_DIR)
+
 .PHONY: release
-release: cross-build
+release: cross-build upload
 	ghr v$(VERSION) $(DIST_DIR)
