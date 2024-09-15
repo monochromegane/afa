@@ -515,10 +515,10 @@ And we also prepare user prompt and schema files.
 ~~~markdown
 Based on the following information, please propose a title and body for a GitHub pull request.
 
-# Summary of Changes (from git diff information):
+## Summary of Changes (from git diff information):
 
 {{ (index .Files 0).Content }}
-# Related Commit Messages (from git log information):
+## Related Commit Messages (from git log information):
 
 {{ (index .Files 1).Content }}
 
