@@ -1,6 +1,6 @@
 # AFA (AI for All)
 
-$$\text{AI for All} \equiv \forall x \in X \, \exists \mathrm{AI}(x)$$
+$$\text{AI for All} := \forall x \in X \, \exists \mathrm{AI}(x)$$
 
 AFA is a terminal-friendly AI command. It enables new behaviors through ad-hoc prompts without requiring programming implementation.
 
