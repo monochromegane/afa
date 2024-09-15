@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.1.4](https://github.com/monochromegane/afa/compare/v0.1.3...v0.1.4) - 2024-09-15
+- Use newer version of actions/checkout. by @monochromegane in https://github.com/monochromegane/afa/pull/8
+- Homebrew formula is now available. by @monochromegane in https://github.com/monochromegane/afa/pull/10
+
 ## [v0.1.3](https://github.com/monochromegane/afa/compare/v0.1.2...v0.1.3) - 2024-09-15
 - Fix release workflow. by @monochromegane in https://github.com/monochromegane/afa/pull/6
 
