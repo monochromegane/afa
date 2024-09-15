@@ -21,4 +21,4 @@ jobs:
       with:
         go-version: stable
     - uses: actions/checkout@v4
-    - run: go test
+    - run: make test
