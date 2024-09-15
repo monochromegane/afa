@@ -46,4 +46,3 @@ upload:
 
 .PHONY: release
 release: cross-build upload
-	ghr v$(VERSION) $(DIST_DIR)
