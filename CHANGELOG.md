@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.1.3](https://github.com/monochromegane/afa/compare/v0.1.2...v0.1.3) - 2024-09-15
+- Fix release workflow. by @monochromegane in https://github.com/monochromegane/afa/pull/6
+
 ## [v0.1.2](https://github.com/monochromegane/afa/compare/v0.1.1...v0.1.2) - 2024-09-15
 - Add first test. by @monochromegane in https://github.com/monochromegane/afa/pull/2
 - Add Makefile by @monochromegane in https://github.com/monochromegane/afa/pull/4
