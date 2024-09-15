@@ -1,4 +1,10 @@
-# AFA (AI for All)
+AFA (AI for All)
+=======
+
+[![Actions Status](https://github.com/monochromegane/afa/workflows/tagpr/badge.svg?branch=main)][actions]
+
+[actions]: https://github.com/monochromegane/afa/actions?workflow=tagpr
+
 
 $$\text{AI for All} := \forall x \in X \, \exists \mathrm{AI}(x)$$
 
