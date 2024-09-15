@@ -115,7 +115,7 @@ afa new -script -Q -j command_suggestion -p $P | jq '. | fromjson' | jq -r '.sug
 
 Follow these steps to install the tool and viewer:
 
-```sh
+```console
 # Install the core application
 go install github.com/monochromegane/afa@latest
 
@@ -123,13 +123,23 @@ go install github.com/monochromegane/afa@latest
 go install github.com/monochromegane/afa-tui@latest
 ```
 
-Initialize the setup:
+You can download binaries from gihub releases.
+- AFA: [https://github.com/monochromegane/afa/releases](https://github.com/monochromegane/afa/releases)
+- AFA-TUI: [https://github.com/monochromegane/afa-tui/releases](https://github.com/monochromegane/afa-tui/releases)
 
-```sh
-afa init
+You can also use [Homebrew](https://brew.sh/):
+
+```console
+brew install monochromegane/tap/afa monochromegane/tap/afa-tui
 ```
 
 ## Configuration
+
+Initialize the setup:
+
+```console
+afa init
+```
 
 ### Default Options
 
