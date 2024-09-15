@@ -559,6 +559,31 @@ zle -N afa-github-pull-request _afa-github-pull-request
 bindkey '^G^P' afa-github-pull-request
 ```
 
+### Session Selection using peco
+
+We prepare a function for ZLE:
+
+```zsh
+function _afa-source() {
+  local selected_session=$(afa list | peco --query "$LBUFFER")
+  if [ -n "$selected_session" ]; then
+    local session_name=$(echo "$selected_session" | cut -f1)
+    BUFFER="afa source -l ${session_name}"
+    zle accept-line
+  fi
+  zle clear-screen
+}
+```
+
+We add a function setting and key bindings to the `.zshrc` as follows:
+
+```zsh
+autoload -Uz _afa-source
+
+zle -N afa-source _afa-source
+bindkey '^G^S' afa-source
+```
+
 ## License
 
 [MIT](https://github.com/monochromegane/afa/blob/master/LICENSE)
