@@ -216,7 +216,7 @@ And we also prepare user prompt and schema files.
 
 `CONFIG_PATH/afa/schemas/command_suggestion.tmpl`
 
-```tmpl
+~~~markdown
 You are an assistant supporting operations in the terminal. Please suggest commands based on the following requirements.
 
 ## Objective
@@ -231,12 +231,12 @@ You are an assistant supporting operations in the terminal. Please suggest comma
 
 ## json_schema
 
-\`\`\`json
+```json
 {
   "suggested_command": "<Final suggested command>"
 }
-\`\`\`
 ```
+~~~
 
 Next, we prepare a function for ZLE:
 
@@ -322,7 +322,7 @@ And we also prepare user prompt and schema files.
 
 `CONFIG_PATH/afa/schemas/code_suggestion.tmpl`
 
-```tmpl
+~~~markdown
 You are an assistant supporting coding tasks. Please suggest code modifications or generate new code based on the following requirements.
 
 {{- if .MessageStdin }}
@@ -332,8 +332,8 @@ You are an assistant supporting coding tasks. Please suggest code modifications 
 - File: {{ (index .Files 0).Content -}}
 - Language: {{ (index .Files 1).Content -}}
 
-\`\`\`
-{{ .MessageStdin }}\`\`\`
+```
+{{ .MessageStdin }}```
 {{ end -}}
 
 {{- if ge (len .Files) 3 }}
@@ -341,8 +341,8 @@ You are an assistant supporting coding tasks. Please suggest code modifications 
 {{ range $i, $f := .Files }}
 {{- if ge $i 2 }}
 - File: {{ $f.Name }}
-\`\`\`
-{{ $f.Content }}\`\`\`
+```
+{{ $f.Content }}```
 {{ end -}}
 {{ end }}
 {{ end -}}
@@ -360,12 +360,12 @@ You are an assistant supporting coding tasks. Please suggest code modifications 
 
 ## json_schema
 
-\`\`\`json
+```json
 {
   "suggested_code": "<Final suggested code>"
 }
-\`\`\`
 ```
+~~~
 
 Finally, we add a command for Vim:
 
@@ -407,20 +407,20 @@ function _afa-capture() {
 
 Here is an example of a general `explain` user prompt template:
 
-```tmpl
+~~~markdown
 Please explain the following commands and their results, as well as the content of the provided files. Additionally, provide solutions if necessary.
 
 {{ .Message }}
 {{ if .MessageStdin }}
-\`\`\`
-{{ .MessageStdin }}\`\`\`
+```
+{{ .MessageStdin }}```
 {{- end }}
 {{ range .Files }}
 - File: {{ .Name }}
-\`\`\`
-{{ .Content }}\`\`\`
-{{ end -}}
 ```
+{{ .Content }}```
+{{ end -}}
+~~~
 
 And we add a function setting and key bindings to the `.zshrc` as follows:
 
@@ -512,7 +512,7 @@ And we also prepare user prompt and schema files.
 
 `CONFIG_PATH/afa/schemas/github_pull_request.tmpl`
 
-```tmpl
+~~~markdown
 Based on the following information, please propose a title and body for a GitHub pull request.
 
 # Summary of Changes (from git diff information):
@@ -537,7 +537,7 @@ Based on the following information, please propose a title and body for a GitHub
 - "## Summary"
 - "## Changes", List multiple key changes. Provide a brief explanation for each key change.
 - Write Outlines only.
-```
+~~~
 
 Next, we prepare a function for ZLE:
 
