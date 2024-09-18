@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -457,17 +459,44 @@ func workSpaceNotExistError() error {
 }
 
 func newAIForAll() (*AIForAll, error) {
-	configDir, err := os.UserConfigDir()
-	if err != nil {
-		return nil, err
+	var configDir string
+	if xdgConfigHome, err := getXdgHomeDir("XDG_CONFIG_HOME"); err == nil {
+		configDir = xdgConfigHome
+	} else {
+		configDir, err = os.UserConfigDir()
+		if err != nil {
+			return nil, err
+		}
 	}
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		return nil, err
+
+	var cacheDir string
+	if xdgCacheHome, err := getXdgHomeDir("XDG_CACHE_HOME"); err == nil {
+		cacheDir = xdgCacheHome
+	} else {
+		cacheDir, err = os.UserCacheDir()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return NewAIForAll(
 		path.Join(configDir, "afa"),
 		path.Join(cacheDir, "afa"),
 	)
+}
+
+func getXdgHomeDir(env string) (string, error) {
+	if xdgHome := os.Getenv(env); xdgHome != "" {
+		xdgHome = filepath.Clean(xdgHome)
+		if strings.HasPrefix(xdgHome, "~") {
+			homeDir, err := os.UserHomeDir()
+			if err != nil {
+				return "", err
+			}
+			return strings.Replace(xdgHome, "~", homeDir, 1), nil
+		} else {
+			return xdgHome, nil
+		}
+	}
+	return "", errors.New("Not found")
 }
