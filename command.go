@@ -14,6 +14,7 @@ import (
 type Command interface {
 	Name() string
 	Description() string
+	Default() bool
 	Parse([]string) error
 	Run() error
 }
@@ -26,6 +27,8 @@ type InitCommand struct {
 func (c InitCommand) Name() string { return "init" }
 
 func (c InitCommand) Description() string { return "Initialize configuration and cache directories." }
+
+func (c InitCommand) Default() bool { return false }
 
 func (c *InitCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
@@ -43,6 +46,8 @@ type NewCommand struct {
 func (c NewCommand) Name() string { return "new" }
 
 func (c NewCommand) Description() string { return "Initiates a new session." }
+
+func (c NewCommand) Default() bool { return true }
 
 func (c *NewCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
@@ -88,6 +93,8 @@ func (c SourceCommand) Name() string { return "source" }
 
 func (c SourceCommand) Description() string { return "Continue from a specified session." }
 
+func (c SourceCommand) Default() bool { return false }
+
 func (c *SourceCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
 		return err
@@ -129,6 +136,8 @@ type ResumeCommand struct {
 func (c ResumeCommand) Name() string { return "resume" }
 
 func (c ResumeCommand) Description() string { return "Continue from the last session." }
+
+func (c ResumeCommand) Default() bool { return false }
 
 func (c *ResumeCommand) Parse(args []string) error {
 	if err := c.flagSet.Parse(args); err != nil {
@@ -172,6 +181,8 @@ func (c ListCommand) Name() string { return "list" }
 
 func (c ListCommand) Description() string { return "List sessions." }
 
+func (c ListCommand) Default() bool { return false }
+
 func (c *ListCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
 }
@@ -188,6 +199,8 @@ type ShowCommand struct {
 func (c ShowCommand) Name() string { return "show" }
 
 func (c ShowCommand) Description() string { return "Show a specified session." }
+
+func (c ShowCommand) Default() bool { return false }
 
 func (c *ShowCommand) Parse(args []string) error {
 	return c.flagSet.Parse(args)
