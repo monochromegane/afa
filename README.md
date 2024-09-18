@@ -88,6 +88,13 @@ echo "Please explain the following.\n{{ (index .Files 0).Content }}" > CONFIG_PA
 afa -u explain /path/to/file
 ```
 
+Run script mode with:
+
+```sh
+# When no subcommand is specified, afa run as `afa new -script` which means `-I=false -H=false -S=false -V=false -L=false`
+pbpaste | afa -p "Transrate this" | pbcopy
+```
+
 Specify the schema for structured output with:
 
 ```sh
