@@ -107,7 +107,7 @@ cat <<< EOS > CONFIG_PATH/schemas/command_suggestion.json
 EOS
 
 P="List Go files from the directory named 'internal' and print the first line of each file."
-afa new -script -Q -j command_suggestion -p $P | jq '. | fromjson' | jq -r '.suggested_command'
+afa new -script -j command_suggestion -p $P | jq -r '.suggested_command'
 #=> find internal -name '*.go' -exec head -n 1 {} \;
 ```
 
@@ -196,13 +196,13 @@ done
 
 shift `expr $OPTIND - 1`
 
-suggested_command=$(afa new -script -Q -j command_suggestion -u command_suggestion -p "$prompt_")
+suggested_command=$(afa new -script -j command_suggestion -u command_suggestion -p "$prompt_")
 if [ $? -ne 0 ]; then
   echo "Error: Failed to generate suggested command." >&2
   exit 1
 fi
 
-command_new=$(printf "%s" "$suggested_command" | jq '. | fromjson' | jq -r '.suggested_command')
+command_new=$(printf "%s" "$suggested_command" | jq -r '.suggested_command')
 if [ $? -ne 0 ]; then
   echo "Error: No suggested command received." >&2
   exit 1
@@ -300,14 +300,14 @@ done
 shift `expr $OPTIND - 1`
 
 code_org=$(cat)
-suggested_code=$(echo "$code_org" | afa new -script -Q -j code_suggestion -u code_suggestion -p "$prompt_" <(echo "$file_path") <(echo "$file_type") "$@")
+suggested_code=$(echo "$code_org" | afa new -script -j code_suggestion -u code_suggestion -p "$prompt_" <(echo "$file_path") <(echo "$file_type") "$@")
 if [ $? -ne 0 ]; then
   echo "Error: Failed to generate suggested code." >&2
   echo "$code_org"
   exit 1
 fi
 
-code_new=$(printf "%s" "$suggested_code" | jq '. | fromjson' | jq -r '.suggested_code')
+code_new=$(printf "%s" "$suggested_code" | jq -r '.suggested_code')
 if [ $? -ne 0 ]; then
   echo "Error: No suggested code received." >&2
   echo "$code_org"
@@ -475,19 +475,19 @@ if ! git diff --quiet HEAD origin/"$current_branch"; then
   exit 1
 fi
 
-pull_request=$(afa new -script -Q -u github_pull_request -j github_pull_request -p "$prompt_" <( git diff --no-ext-diff origin ) <( git log --format="- %s" --no-merges origin..HEAD ))
+pull_request=$(afa new -script -u github_pull_request -j github_pull_request -p "$prompt_" <( git diff --no-ext-diff origin ) <( git log --format="- %s" --no-merges origin..HEAD ))
 if [ $? -ne 0 ]; then
   echo "Error: Failed to generate suggested github pull request." >&2
   exit 1
 fi
 
-title=$(printf "%s" "$pull_request" | jq '. | fromjson' | jq -r '.title_for_github_pull_request')
+title=$(printf "%s" "$pull_request" | jq -r '.title_for_github_pull_request')
 if [ $? -ne 0 ]; then
   echo "Error: No suggested github pull request received." >&2
   exit 1
 fi
 
-body=$(printf "%s" "$pull_request" | jq '. | fromjson' | jq -r '.body_for_github_pull_request')
+body=$(printf "%s" "$pull_request" | jq -r '.body_for_github_pull_request')
 if [ $? -ne 0 ]; then
   echo "Error: No suggested github pull request received." >&2
   exit 1
