@@ -70,7 +70,11 @@ func main() {
 			fmt.Fprintf(flagSetOutput, "Usage of %s:\n", cmdName)
 			flagSet.PrintDefaults()
 			for _, cmd := range cmds {
-				fmt.Fprintf(flagSetOutput, "  %s\n\t%s\n", cmd.Name(), cmd.Description())
+				isDefaultSubCommand := ""
+				if cmd.Default() {
+					isDefaultSubCommand = " (default)"
+				}
+				fmt.Fprintf(flagSetOutput, "  %s\n\t%s%s\n", cmd.Name(), cmd.Description(), isDefaultSubCommand)
 			}
 			os.Exit(0)
 		}
