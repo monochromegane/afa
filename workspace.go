@@ -73,6 +73,13 @@ func (w *WorkSpace) setupFiles(option *Option, secret *Secret) error {
 		return err
 	}
 
+	if err := w.writeFileIfNotExist(
+		w.SchemaPath("command_suggestion"),
+		[]byte("{\n  \"type\": \"object\",\n  \"properties\": {\n    \"suggested_command\": {\n      \"type\": \"string\"\n    }\n  },\n  \"additionalProperties\": false,\n  \"required\": [\n    \"suggested_command\"\n  ]\n}"),
+	); err != nil {
+		return err
+	}
+
 	jsonOption, err := json.MarshalIndent(option, "", "  ")
 	if err != nil {
 		return err
