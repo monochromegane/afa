@@ -405,7 +405,7 @@ func setBasicChatFlags(aiForAll *AIForAll, flagSet *flag.FlagSet) error {
 		&aiForAll.Option.Script.Enabled,
 		"script",
 		aiForAll.Option.Script.Enabled,
-		"Sets a predefined set of options for script execution simultaneously, setting I, H, S, and V to false.",
+		"Sets a predefined set of options for script execution simultaneously, setting I, H, S, L and V to false.",
 	)
 	flagSet.StringVar(
 		&aiForAll.Message,
